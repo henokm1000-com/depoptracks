@@ -204,5 +204,14 @@ app.post('/api/fulfillment/submit',async(req,res)=>{
   }catch(e){res.status(500).json({error:e.message});}
 });
 
-app.get('/*splat',(req,res)=>res.sendFile(path.join(ROOT,'public/index.html')));
-app.listen(PORT,()=>console.log(`Depop Tracker running at http://localhost:${PORT}`));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(ROOT, 'public', 'index.html'));
+});
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(ROOT, 'public', 'index.html'));
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Depop Tracker running on port ${PORT}`);
+});
