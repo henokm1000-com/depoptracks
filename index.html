@@ -1,0 +1,4305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Depop Tracker</title>
+<style>
+:root{
+ --bg:#0d0d10;
+ --panel:#18181d;
+ --panel2:#202028;
+ --panel3:#272730;
+ --border:rgba(255,255,255,.08);
+ --border2:rgba(255,255,255,.13);
+ --text:#f4f4f6;
+ --muted:#a0a0ab;
+ --muted2:#6d6d78;
+ --green:#3ecf8e;
+ --red:#ff5f7a;
+ --yellow:#f7c948;
+ --accent:#ff2d55;
+ --blue:#7aa7ff;
+ --radius:12px;
+ --radius-lg:16px;
+ --shadow:0 18px 40px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow-x:hidden}
+body{
+ font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ background:var(--bg);
+ color:var(--text);
+ font-size:14px;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit}
+.hidden{display:none !important}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.green{color:var(--green)}
+.red{color:var(--red)}
+.yellow{color:var(--yellow)}
+.muted{color:var(--muted)}
+.muted2{color:var(--muted2)}
+.small{font-size:12px}
+.tiny{font-size:11px}
+.badge{
+ display:inline-flex;align-items:center;gap:6px;
+ padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600;
+ border:1px solid var(--border2);background:rgba(255,255,255,.03)
+}
+.badge-paid{color:var(--green);background:rgba(62,207,142,.10)}
+.badge-unpaid{color:var(--red);background:rgba(255,95,122,.10)}
+.badge-warning{color:var(--yellow);background:rgba(247,201,72,.12)}
+.badge-info{color:var(--blue);background:rgba(122,167,255,.12)}
+.wrap{max-width:1320px;margin:0 auto;width:100%}
+nav{
+ position:sticky;top:0;z-index:50;
+ display:flex;align-items:center;gap:8px;
+ padding:12px 14px;
+ background:rgba(13,13,16,.94);
+ backdrop-filter:blur(12px);
+ border-bottom:1px solid var(--border);
+}
+.brand{
+ font-weight:800;letter-spacing:-.5px;white-space:nowrap;
+ display:flex;align-items:center;gap:2px
+}
+.brand span{color:var(--accent)}
+.tabs{display:flex;gap:6px;overflow:auto}
+.account-badge{margin-left:0;flex:none}
+.tab{
+ border:1px solid transparent;background:transparent;color:var(--muted);
+ padding:8px 12px;border-radius:10px;white-space:nowrap
+}
+.tab:hover{background:var(--panel3);color:var(--text)}
+.tab.active{background:var(--panel3);color:var(--text);border-color:var(--border2)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{
+ border:1px solid var(--border2);background:var(--panel2);color:var(--text);
+ padding:8px 12px;border-radius:10px
+}
+.btn:hover{background:var(--panel3)}
+.btn-primary{
+ background:var(--accent);border-color:transparent;color:white;font-weight:700
+}
+.btn-primary:hover{filter:brightness(1.05)}
+.btn-danger{
+ background:transparent;border-color:rgba(255,95,122,.35);color:var(--red)
+}
+.btn-restore{
+ background:transparent;border-color:rgba(122,167,255,.35);color:var(--blue)
+}
+.btn-restore:hover{background:rgba(122,167,255,.08)}
+select,input[type="text"],input[type="number"],input[type="date"],textarea{
+ background:var(--panel2);border:1px solid var(--border2);color:var(--text);
+ border-radius:10px;padding:10px 12px;outline:none
+}
+select:focus,input:focus,textarea:focus{border-color:rgba(255,45,85,.55)}
+textarea{resize:vertical;min-height:92px}
+main{padding:16px;box-sizing:border-box;width:100%;overflow-x:hidden}
+.view{display:none}
+.view.active{display:block}
+
+.grid-12{display:grid;gap:12px}
+.card{
+ background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+ box-shadow:var(--shadow)
+}
+.card-pad{padding:14px}
+.section-title{font-size:15px;font-weight:800;letter-spacing:-.2px}
+.subtext{font-size:12px;color:var(--muted);line-height:1.45}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.space-between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.metric-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px
+}
+.metric{
+ background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px;min-width:0
+}
+.metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin-bottom:6px}
+.metric-val{font-size:20px;font-weight:900;letter-spacing:-.8px;line-height:1.05}
+.metric-sub{margin-top:4px;font-size:11px;color:var(--muted)}
+.dashboard-grid{
+ display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.98fr);gap:12px
+}
+/* Hero metrics - big 3 on dashboard */
+.hero-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.hero-metric{
+ background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+ padding:20px 18px;min-width:0
+}
+.hero-metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);margin-bottom:8px}
+.hero-metric-val{font-size:34px;font-weight:900;letter-spacing:-1.5px;line-height:1}
+.hero-metric-sub{margin-top:6px;font-size:12px;color:var(--muted)}
+/* Dashboard main (chart + goal side by side) */
+.dash-main-grid{
+ display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px
+}
+/* Stats layouts */
+.stats-summary-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px
+}
+.stats-main-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
+}
+.stats-bottom-grid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.stack{display:grid;gap:12px}
+.dashboard-top{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.dashboard-mid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
+}
+.dashboard-bottom{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px
+}
+.goal-box,.insight-box,.buyers-box,.fees-box,.best-box,.chart-box,.top-item-box{
+ background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;min-width:0;overflow:hidden
+}
+.goal-progress{
+ height:10px;background:var(--panel3);border-radius:999px;overflow:hidden;margin-top:10px;border:1px solid var(--border)
+}
+.goal-progress > div{height:100%;background:linear-gradient(90deg,var(--accent),#ff7a92);width:0%}
+.progress-row{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px}
+.chart{
+ width:100%;height:240px;display:block
+}
+.chart-wrap{overflow:auto}
+.chart-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.legend{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:999px;background:var(--accent)}
+.dot.blue{background:var(--blue)}
+.dot.green{background:var(--green)}
+.dot.yellow{background:var(--yellow)}
+.dot.red{background:var(--red)}
+
+.controls{
+ display:grid;grid-template-columns:1.15fr .7fr .7fr .7fr .7fr .7fr;gap:10px;margin-bottom:12px
+}
+.controls > *{min-width:0}
+.search-wrap{margin-bottom:12px}
+.search-wrap input{width:100%}
+.table-wrap{
+ overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg)
+}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th,td{
+ padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle
+}
+th{
+ font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);text-align:left
+}
+td{
+ font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+tr:hover td{background:rgba(255,255,255,.02)}
+tr.zero-cost td:first-child, .sale-card.zero-cost{
+ box-shadow:inset 0 0 0 1px rgba(255,95,122,.25);
+}
+.cost-zero{
+ color:var(--red);font-weight:800
+}
+.thumb{
+ width:38px;height:38px;border-radius:10px;background:var(--panel3);object-fit:cover;border:1px solid var(--border2);flex:none
+}
+.cell-flex{display:flex;align-items:center;gap:10px;min-width:0}
+.cell-stack{display:flex;flex-direction:column;gap:2px;min-width:0}
+.item-name{font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.sale-card{
+ background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+ padding:12px;display:grid;gap:10px
+}
+.sale-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.sale-profit{font-size:18px;font-weight:900;letter-spacing:-.5px}
+.sale-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+ background:var(--panel3);border:1px solid var(--border);border-radius:10px;
+ padding:5px 8px;font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center
+}
+.chip strong{color:var(--text)}
+.sale-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:10px}
+.sale-actions{display:flex;gap:8px;flex-wrap:wrap}
+.inline-btn{
+ border:1px solid var(--border2);background:var(--panel2);color:var(--text);
+ padding:7px 10px;border-radius:10px;font-size:12px
+}
+.inline-btn:hover{background:var(--panel3)}
+.del-btn{border-color:rgba(255,95,122,.35);color:var(--red);background:transparent}
+.del-btn:hover{background:rgba(255,95,122,.08)}
+.edit-cost{
+ display:inline-flex;align-items:center;gap:6px
+}
+.edit-cost input{width:86px;padding:7px 9px}
+.cost-click,.tap-edit{
+ border-bottom:1px dashed var(--muted2);cursor:pointer
+}
+.cost-click:hover,.tap-edit:hover{color:var(--accent);border-color:var(--accent)}
+.nav-drop{position:relative;display:inline-flex}
+.nav-drop input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.modal-overlay{
+ display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.68);
+ align-items:center;justify-content:center;padding:16px
+}
+.modal-overlay.open{display:flex}
+.modal{
+ width:100%;max-width:480px;background:var(--panel);border:1px solid var(--border2);
+ border-radius:18px;max-height:92vh;overflow:auto;box-shadow:var(--shadow);padding:20px
+}
+.modal h3{font-size:18px;margin-bottom:12px;letter-spacing:-.2px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row{display:grid;gap:6px}
+.form-row label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.preview{
+ background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:12px
+}
+.preview-grid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px
+}
+.preview-item{
+ background:var(--panel3);border:1px solid var(--border);border-radius:12px;padding:10px
+}
+.preview-item strong{display:block;font-size:12px;margin-bottom:4px}
+.preview-item span{font-size:12px;color:var(--muted)}
+.file-pill{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);
+ border:1px solid var(--border2);border-radius:12px;padding:10px
+}
+.file-pill img{width:52px;height:52px;object-fit:cover;border-radius:12px;border:1px solid var(--border2)}
+.toast{
+ position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+ background:var(--panel2);border:1px solid var(--border2);border-radius:999px;
+ padding:10px 14px;opacity:0;pointer-events:none;transition:.2s;z-index:100
+}
+.toast.show{opacity:1}
+.undo-bar{
+ position:fixed;left:50%;bottom:66px;transform:translateX(-50%);
+ display:none;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border2);
+ border-radius:999px;padding:10px 12px;z-index:101;box-shadow:var(--shadow)
+}
+.undo-bar.show{display:flex}
+.undo-bar button{padding:7px 10px;border-radius:999px}
+.import-table{width:100%;border-collapse:collapse;margin-top:10px}
+.import-table th,.import-table td{padding:8px 10px;font-size:12px}
+.import-summary{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.kpi{
+ background:var(--panel3);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--muted)
+}
+.kpi strong{color:var(--text)}
+.mobile-list{display:none;gap:10px;flex-direction:column}
+.photo-slot{
+ width:54px;height:54px;border-radius:14px;background:var(--panel3);overflow:hidden;border:1px solid var(--border2);
+ flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px
+}
+.photo-slot img{width:100%;height:100%;object-fit:cover}
+.top-list,.insight-list,.buyers-list,.day-list{display:grid;gap:8px;margin-top:10px;min-width:0;overflow:hidden}
+.list-row{
+ display:flex;justify-content:space-between;gap:10px;align-items:center;
+ background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:10px;
+ min-width:0;overflow:hidden
+}
+.list-row .left{min-width:0;overflow:hidden;flex:1}
+.list-row .left strong,.list-row .left span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.list-row .right{white-space:nowrap;text-align:right;font-size:12px;flex:none}
+.insight{
+ background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:10px;color:var(--text);line-height:1.45
+}
+.calc-box{
+ display:grid;grid-template-columns:1fr;gap:12px;max-width:920px;width:100%;box-sizing:border-box
+}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.calc-output{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+.calc-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;min-width:0;overflow:hidden}
+.calc-card .big{font-size:28px;font-weight:900;letter-spacing:-1px}
+.calc-card .label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px}
+.calc-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
+/* ── Extra tab ──────────────────────────────────────────── */
+.extra-card{
+ background:var(--panel);border:1px solid var(--border);
+ border-radius:var(--radius-lg);padding:20px
+}
+.extra-upload-grid{
+ display:grid;grid-template-columns:1fr 1fr;gap:12px
+}
+.extra-upload-zone{
+ border:2px dashed var(--border);border-radius:var(--radius);
+ cursor:pointer;transition:border-color .18s,background .18s;
+ overflow:hidden;min-height:160px;
+ display:flex;align-items:center;justify-content:center
+}
+.extra-upload-zone:hover{border-color:var(--accent);background:rgba(255,45,85,.04)}
+.extra-upload-zone.has-image{border-style:solid;border-color:var(--blue)}
+.extra-upload-inner{
+ display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:6px;padding:16px;text-align:center;
+ width:100%;height:100%
+}
+.extra-upload-inner img{
+ width:100%;height:100%;object-fit:cover;
+ position:absolute;top:0;left:0;border-radius:calc(var(--radius) - 2px)
+}
+.extra-upload-zone{position:relative}
+.extra-upload-icon{font-size:32px;line-height:1}
+.extra-upload-label{font-size:13px;font-weight:600;color:var(--text)}
+.extra-upload-sub{font-size:11px;color:var(--muted)}
+.extra-gen-btn{letter-spacing:.3px}
+.caption-output{
+ background:var(--bg);border:1px solid var(--border);
+ border-radius:var(--radius);padding:14px 16px;
+ font-size:14px;line-height:1.7;white-space:pre-wrap;
+ color:var(--text)
+}
+.outfit-result-img{
+ width:100%;border-radius:var(--radius);
+ border:1px solid var(--border);display:block
+}
+
+/* ── Bundle styles ── */
+.bundle-toggle{
+ display:flex;align-items:center;gap:8px;
+ background:var(--panel2);border:1px solid var(--border2);
+ border-radius:10px;padding:10px 12px;cursor:pointer;
+ transition:border-color .15s
+}
+.bundle-toggle:hover{border-color:rgba(255,45,85,.5)}
+.bundle-toggle input[type=checkbox]{
+ width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex:none
+}
+.bundle-toggle-label{font-size:13px;font-weight:600;line-height:1.2}
+.bundle-toggle-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.bundle-section{
+ background:var(--panel2);border:1px solid rgba(255,45,85,.25);
+ border-radius:12px;padding:12px;grid-column:1/-1;
+ display:grid;gap:10px
+}
+.bundle-section-title{
+ font-size:12px;font-weight:700;text-transform:uppercase;
+ letter-spacing:.8px;color:var(--accent);margin-bottom:2px
+}
+.bundle-items-list{display:grid;gap:8px}
+.bundle-item-row{
+ display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end
+}
+.bundle-item-row .form-row{margin:0}
+.bundle-remove-btn{
+ border:1px solid rgba(255,95,122,.35);color:var(--red);background:transparent;
+ padding:9px 10px;border-radius:10px;font-size:12px;white-space:nowrap;
+ align-self:end
+}
+.bundle-remove-btn:hover{background:rgba(255,95,122,.08)}
+.bundle-add-btn{
+ border:1px dashed var(--border2);background:transparent;color:var(--muted);
+ padding:9px;border-radius:10px;font-size:12px;width:100%;
+ display:flex;align-items:center;justify-content:center;gap:6px
+}
+.bundle-add-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(255,45,85,.04)}
+.bundle-badge{
+ display:inline-flex;align-items:center;gap:4px;
+ background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.3);
+ color:var(--accent);border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700
+}
+.extra-spinner{
+ display:inline-block;width:16px;height:16px;
+ border:2px solid rgba(255,255,255,.2);
+ border-top-color:#fff;border-radius:50%;
+ animation:spin .7s linear infinite;
+ vertical-align:middle;margin-right:6px
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:720px){
+ .extra-upload-grid{grid-template-columns:1fr}
+ .extra-card{padding:14px}
+}
+
+@media(max-width:1040px){
+ .dashboard-grid,.dashboard-top,.dashboard-mid,.dashboard-bottom,.controls,.calc-output{grid-template-columns:1fr}
+ .form-grid,.calc-grid{grid-template-columns:1fr}
+ .dash-main-grid{grid-template-columns:1fr}
+ .stats-main-grid,.stats-bottom-grid{grid-template-columns:1fr}
+ .stats-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+ /* ── Nav: stacked layout ── */
+ nav{
+ padding:10px 12px;gap:0;
+ flex-wrap:wrap;row-gap:8px;
+ align-items:flex-start
+ }
+ .brand{font-size:15px;flex:0 0 auto}
+
+ /* Tabs + account badge stay near each other at the top */
+ .tabs{
+ order:1;width:auto;flex:1 1 auto;min-width:0;
+ overflow-x:auto;
+ -webkit-overflow-scrolling:touch;
+ padding-bottom:2px;
+ scrollbar-width:none
+ }
+ .tabs::-webkit-scrollbar{display:none}
+ .tab{padding:7px 10px;font-size:13px}
+
+ .account-badge{
+ order:2;width:auto;flex:none;
+ display:flex !important;align-items:center;gap:8px;
+ background:var(--panel2);border:1px solid var(--border2);
+ border-radius:12px;padding:8px 10px;
+ margin-left:auto;max-width:100%
+ }
+ .account-name{font-weight:600;font-size:13px;flex:1;max-width:120px}
+ .account-logout{
+ margin-left:auto;padding:5px 10px;border-radius:8px;
+ font-size:12px;border:1px solid var(--border2);
+ background:transparent;color:var(--muted)
+ }
+
+ /* Action buttons: 2-col grid */
+ .nav-right{
+ order:3;width:100%;margin-left:0;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:8px
+ }
+ /* Import CSV (nav-drop) and Log sale side by side */
+ .nav-drop{grid-column:1;width:100%}
+ .nav-drop button{width:100%;justify-content:center;padding:10px 12px}
+ #add-sale-btn{grid-column:2;width:100%;text-align:center;padding:10px 12px}
+ /* Restore and Clear all side by side */
+ #restore-btn{grid-column:1;width:100%;text-align:center;padding:10px 12px}
+ #clear-all-btn{grid-column:2;width:100%;text-align:center;padding:10px 12px}
+ /* When restore is hidden, clear all spans both columns */
+ #restore-btn.hidden ~ #clear-all-btn{grid-column:1/-1}
+
+ /* ── Main padding ── */
+ main{padding:10px}
+
+ /* ── Hero metrics: 1 column stacked on mobile ── */
+ .hero-grid{grid-template-columns:1fr;gap:8px}
+ .hero-metric{padding:16px 14px}
+ .hero-metric-val{font-size:28px}
+
+ /* ── Secondary metrics: 2 columns ── */
+ .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .metric{padding:10px}
+ .metric-val{font-size:17px}
+
+ /* ── Dashboard: single column ── */
+ .dash-main-grid{grid-template-columns:1fr}
+ .dashboard-grid,.dashboard-top,.dashboard-mid,.dashboard-bottom{grid-template-columns:1fr}
+
+ /* ── Stats layouts: single column ── */
+ .stats-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .stats-main-grid,.stats-bottom-grid{grid-template-columns:1fr}
+
+ /* ── Box padding tighter ── */
+ .goal-box,.insight-box,.buyers-box,.fees-box,.best-box,.chart-box,.top-item-box{padding:12px}
+
+ /* ── Table hidden, cards shown ── */
+ .table-wrap{display:none}
+ .mobile-list{display:flex}
+
+ /* ── Sale cards tighter ── */
+ .sale-card{padding:10px;gap:8px}
+ .sale-profit{font-size:16px}
+ .chip{font-size:11px;padding:4px 7px}
+
+ /* ── Controls: 2-col grid ── */
+ .controls{
+ grid-template-columns:1fr 1fr;gap:8px
+ }
+ .controls input#search{grid-column:1/-1}
+
+ /* ── Calculator: single-column on mobile ── */
+ .calc-box{width:100%;max-width:100%}
+ .calc-grid{grid-template-columns:1fr !important}
+ .calc-output{grid-template-columns:1fr !important;gap:8px}
+ .calc-card{padding:10px}
+ .calc-card .big{font-size:22px;letter-spacing:-.5px}
+ #view-calc{overflow-x:hidden}
+
+ /* ── Modals: full-screen sheet on mobile ── */
+ .modal-overlay{padding:0;align-items:flex-end}
+ .modal{
+ padding:16px;
+ border-radius:20px 20px 0 0;
+ max-height:90vh;
+ max-width:100%
+ }
+
+ /* ── Section title / subtext spacing ── */
+ .section-title{font-size:14px}
+ .subtext{font-size:11px}
+
+ /* ── Chart height ── */
+ .chart{height:180px}
+
+ /* ── List rows ── */
+ .list-row{padding:8px 10px}
+
+}
+/* ── Auth overlay ──────────────────────────────────────── */
+.auth-overlay{
+ position:fixed;inset:0;z-index:200;
+ background:var(--bg);
+ display:flex;align-items:center;justify-content:center;
+ padding:16px;
+ transition:opacity .25s;
+}
+.auth-overlay.hidden{display:none}
+.auth-box{
+ width:100%;max-width:380px;
+ background:var(--panel);border:1px solid var(--border2);
+ border-radius:20px;padding:28px 24px;
+ box-shadow:0 24px 60px rgba(0,0,0,.45)
+}
+.auth-logo{
+ font-size:20px;font-weight:900;letter-spacing:-.5px;
+ margin-bottom:24px;text-align:center
+}
+.auth-logo span{color:var(--accent)}
+.auth-tabs{
+ display:flex;background:var(--panel2);border-radius:12px;padding:4px;
+ margin-bottom:20px;gap:4px
+}
+.auth-tab{
+ flex:1;padding:8px;border-radius:9px;border:none;
+ background:transparent;color:var(--muted);font-weight:600;font-size:13px;cursor:pointer
+}
+.auth-tab.active{background:var(--panel3);color:var(--text)}
+.auth-field{display:grid;gap:6px;margin-bottom:12px}
+.auth-field label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
+.auth-field input{width:100%;padding:11px 13px}
+.auth-submit{
+ width:100%;padding:12px;border-radius:11px;font-size:15px;font-weight:700;
+ background:var(--accent);color:white;border:none;cursor:pointer;margin-top:4px
+}
+.auth-submit:hover{filter:brightness(1.08)}
+.auth-submit:disabled{opacity:.6;cursor:not-allowed}
+.auth-msg{
+ margin-top:10px;font-size:13px;min-height:18px;text-align:center
+}
+.auth-msg.err{color:var(--red)}
+.auth-msg.ok{color:var(--green)}
+.auth-loading{
+ display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);
+ border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;
+ vertical-align:middle;margin-right:6px
+}
+/* account badge in nav */
+.account-badge{
+ display:flex;align-items:center;gap:8px;
+ background:var(--panel2);border:1px solid var(--border2);
+ border-radius:10px;padding:7px 10px;font-size:13px;order:2;max-width:100%;
+ align-self:center
+}
+.account-avatar{
+ width:24px;height:24px;border-radius:999px;
+ background:var(--accent);display:flex;align-items:center;justify-content:center;
+ font-size:11px;font-weight:800;color:white;flex:none
+}
+.account-name{font-weight:600;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-logout{
+ background:transparent;border:none;color:var(--muted);font-size:11px;
+ padding:2px 0;cursor:pointer
+}
+.account-logout:hover{color:var(--red)}
+
+ /* ── Undo bar full-width ── */
+ .undo-bar{
+ left:12px;right:12px;bottom:12px;
+ transform:none;border-radius:14px;
+ justify-content:space-between
+ }
+
+ /* ── Toast full-width ── */
+ .toast{
+ left:12px;right:12px;
+ transform:none;text-align:center;
+ border-radius:12px
+ }
+
+ /* ── Sales log header ── */
+ #view-log .space-between{flex-direction:column;align-items:flex-start;gap:8px}
+ #view-log .space-between .btn{width:100%;text-align:center}
+}/* ── Payout Calendar ──────────────────────────────────────────────────── */
+.payout-card {
+ background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);
+ padding:16px;margin-top:12px;overflow:hidden
+}
+.payout-header-row {
+ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px
+}
+.payout-summary-strip {
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px
+}
+.payout-summary-item {
+ background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:11px 13px
+}
+.payout-summary-label {
+ font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:5px
+}
+.payout-summary-val {
+ font-size:18px;font-weight:900;letter-spacing:-.6px;line-height:1.1
+}
+.payout-summary-sub {
+ font-size:11px;color:var(--muted);margin-top:3px
+}
+.payout-day-group {
+ border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px
+}
+.payout-day-header {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ padding:10px 14px;background:var(--panel2);cursor:pointer;
+ transition:background .15s;user-select:none
+}
+.payout-day-header:hover { background:var(--panel3) }
+.payout-day-label {
+ font-size:13px;font-weight:700;letter-spacing:-.1px
+}
+.payout-day-right {
+ display:flex;align-items:center;gap:8px;flex-shrink:0
+}
+.payout-day-amount {
+ font-size:14px;font-weight:900;letter-spacing:-.4px;color:var(--green)
+}
+.payout-day-count {
+ font-size:11px;color:var(--muted);white-space:nowrap
+}
+.payout-soon-badge {
+ display:inline-flex;align-items:center;gap:4px;
+ padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;
+ background:rgba(255,45,85,.15);color:var(--accent);border:1px solid rgba(255,45,85,.3);
+ animation: payout-pulse 2s ease-in-out infinite
+}
+@keyframes payout-pulse {
+ 0%,100%{opacity:1} 50%{opacity:.65}
+}
+.payout-items-list {
+ border-top:1px solid var(--border)
+}
+.payout-item-row {
+ display:flex;align-items:center;gap:10px;padding:9px 14px;
+ border-bottom:1px solid var(--border);transition:background .12s
+}
+.payout-item-row:last-child { border-bottom:none }
+.payout-item-row:hover { background:rgba(255,255,255,.02) }
+.payout-item-name {
+ flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0
+}
+.payout-item-meta {
+ font-size:11px;color:var(--muted);flex-shrink:0
+}
+.payout-item-amount {
+ font-size:12px;font-weight:800;letter-spacing:-.3px;flex-shrink:0;color:var(--green)
+}
+.payout-empty {
+ text-align:center;padding:32px 16px;color:var(--muted);font-size:13px
+}
+.payout-empty-icon {
+ font-size:32px;margin-bottom:10px
+}
+.payout-toggle-btn {
+ background:none;border:none;color:var(--muted2);font-size:14px;line-height:1;padding:2px 4px;cursor:pointer;
+ transition:transform .2s
+}
+.payout-toggle-btn.open { transform:rotate(180deg) }
+.payout-items-list.collapsed { display:none }
+.payout-desktop-list { display:block }
+.payout-mobile-compact { display:none }
+@media(max-width:600px){
+ .payout-mobile-compact { display:block }
+ .payout-desktop-list { display:none }
+ .payout-summary-strip { grid-template-columns:1fr 1fr }
+ .payout-summary-strip > :nth-child(3) { grid-column:1/-1 }
+}
+.payout-mobile-row {
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ padding:11px 14px;border-bottom:1px solid var(--border)
+}
+.payout-mobile-row:last-child { border-bottom:none }
+.payout-mobile-date { font-size:12px;font-weight:700 }
+.payout-mobile-count { font-size:11px;color:var(--muted) }
+.payout-mobile-right { text-align:right;flex-shrink:0 }
+.payout-mobile-amt { font-size:15px;font-weight:900;letter-spacing:-.4px;color:var(--green) }
+.payout-mobile-badge { font-size:10px;font-weight:700;color:var(--accent) }
+/* ── End Payout Calendar ─────────────────────────────────────────────── */
+
+</style>
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" sizes="192x192" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" sizes="512x512" href="data:image/png;base64,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">
+<meta name="theme-color" content="#0d0d10">
+</head>
+<body>
+
+<!-- ── Auth Overlay ──────────────────────────────────────── -->
+<div class="auth-overlay" id="auth-overlay">
+ <div class="auth-box">
+ <div class="auth-logo">depop<span>.</span>tracker</div>
+ <div class="auth-tabs">
+ <button class="auth-tab active" id="auth-tab-login">Log in</button>
+ <button class="auth-tab" id="auth-tab-signup">Sign up</button>
+ </div>
+ <div class="auth-field">
+ <label>Username</label>
+ <input type="text" id="auth-username" placeholder="yourname" autocomplete="username" autocapitalize="none" />
+ </div>
+ <div class="auth-field">
+ <label>Password</label>
+ <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
+ </div>
+ <div class="auth-field hidden" id="auth-confirm-wrap">
+ <label>Confirm password</label>
+ <input type="password" id="auth-confirm" placeholder="••••••••" autocomplete="new-password" />
+ </div>
+ <button class="auth-submit" id="auth-submit">Log in</button>
+ <div class="auth-msg" id="auth-msg"></div>
+ </div>
+</div>
+
+<nav>
+ <div class="brand">depop<span>.</span>tracker</div>
+ <div class="tabs">
+ <button type="button" class="tab active" data-view="dashboard" onclick="setView('dashboard')">Dashboard</button>
+ <button type="button" class="tab" data-view="stats" onclick="setView('stats')">Stats</button>
+ <button type="button" class="tab" data-view="log" onclick="setView('log')">Sales log</button>
+ <button type="button" class="tab" data-view="calc" onclick="setView('calc')">Calculator</button>
+ <button type="button" class="tab" data-view="extra" onclick="setView('extra')"> Extra</button>
+ <button type="button" class="tab" data-view="fulfillment" id="tab-fulfillment" onclick="setView('fulfillment')">Fulfillment</button>
+ <div class="account-badge hidden" id="account-badge">
+ <div class="account-avatar" id="account-avatar">?</div>
+ <span class="account-name" id="account-name"></span>
+ <button class="account-logout" id="account-logout">Log out</button>
+ </div>
+ </div>
+ 
+ <div class="nav-right"><div class="nav-drop">
+ <button class="btn btn-primary">Import CSV</button>
+ <input id="csv-input" type="file" accept=".csv" />
+ </div>
+ <button class="btn" id="add-sale-btn" onclick="window._openSaleModal()">+ Log sale</button>
+ <button class="btn btn-restore hidden" id="restore-btn" title="Restore cleared data">↩ Restore</button>
+ <button class="btn btn-danger" id="clear-all-btn" title="Clear all data"> Clear all</button>
+ </div>
+</nav>
+
+<main class="wrap">
+ <!-- ── DASHBOARD ─────────────────────────────────────────── -->
+ <section id="view-dashboard" class="view active">
+
+ <!-- Hero stats row -->
+ <div class="hero-grid" id="hero-grid"></div>
+
+ <!-- Secondary metrics -->
+ <div class="metric-grid" id="metric-grid" style="margin-top:12px"></div>
+
+ <!-- Chart + Goal side by side -->
+ <div class="dash-main-grid" style="margin-top:12px">
+ <div class="chart-box">
+ <div class="space-between">
+ <div>
+ <div class="section-title">Monthly performance</div>
+ <div class="subtext">Revenue, profit, and sales count by month.</div>
+ </div>
+ <span class="badge badge-info" id="month-range">Last 6 months</span>
+ </div>
+ <div class="chart-wrap">
+ <svg id="monthly-chart" class="chart" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+ </div>
+ <div class="chart-legend">
+ <div class="legend"><span class="dot green"></span>Revenue</div>
+ <div class="legend"><span class="dot blue"></span>Profit</div>
+ <div class="legend"><span class="dot yellow"></span>Sales count</div>
+ </div>
+ </div>
+
+ <div class="stack">
+ <div class="goal-box">
+ <div class="space-between">
+ <div>
+ <div class="section-title">Goal tracker</div>
+ <div class="subtext">Monthly profit and sales goals.</div>
+ </div>
+ <span class="badge badge-warning">This month</span>
+ </div>
+ <div class="form-grid" style="margin-top:12px">
+ <div class="form-row">
+ <label>Profit goal</label>
+ <input id="goal-profit" type="number" min="0" step="1" placeholder="500" />
+ </div>
+ <div class="form-row">
+ <label>Sales goal</label>
+ <input id="goal-sales" type="number" min="0" step="1" placeholder="30" />
+ </div>
+ </div>
+ <div class="progress-row"><span class="small muted">Profit progress</span><strong class="small" id="goal-profit-text">$0 / $0</strong></div>
+ <div class="goal-progress"><div id="goal-profit-bar"></div></div>
+ <div class="progress-row"><span class="small muted">Sales progress</span><strong class="small" id="goal-sales-text">0 / 0</strong></div>
+ <div class="goal-progress"><div id="goal-sales-bar"></div></div>
+ </div>
+
+ <div class="best-box">
+ <div class="space-between">
+ <div>
+ <div class="section-title">Best sale</div>
+ <div class="subtext">Highest profit item in your tracker.</div>
+ </div>
+ <span class="badge badge-info" id="best-count">0 sales</span>
+ </div>
+ <div id="best-sale" style="margin-top:10px"></div>
+ </div>
+ </div>
+
+ <!-- Payout Calendar -->
+ <div class="payout-card" id="payout-calendar-card" style="margin-top:12px">
+ <div class="payout-header-row">
+ <div>
+ <div class="section-title">Payout Calendar</div>
+ <div class="subtext">Upcoming payouts from your sales — grouped by arrival date.</div>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+ <span class="payout-soon-badge hidden" id="payout-soon-badge"></span>
+ <span class="badge badge-info" id="payout-total-badge">$0.00 incoming</span>
+ </div>
+ </div>
+ <!-- Summary strip -->
+ <div class="payout-summary-strip" id="payout-summary-strip">
+ <div class="payout-summary-item">
+ <div class="payout-summary-label">Total incoming</div>
+ <div class="payout-summary-val green" id="payout-total-incoming">$0.00</div>
+ <div class="payout-summary-sub">All upcoming payouts</div>
+ </div>
+ <div class="payout-summary-item">
+ <div class="payout-summary-label">Next payout</div>
+ <div class="payout-summary-val" id="payout-next-amount">—</div>
+ <div class="payout-summary-sub" id="payout-next-date">No upcoming payouts</div>
+ </div>
+ <div class="payout-summary-item">
+ <div class="payout-summary-label">Payout dates</div>
+ <div class="payout-summary-val" id="payout-dates-count">0</div>
+ <div class="payout-summary-sub">Upcoming dates</div>
+ </div>
+ </div>
+ <!-- Desktop detailed list -->
+ <div class="payout-desktop-list" id="payout-desktop-list"></div>
+ <!-- Mobile compact list -->
+ <div class="payout-mobile-compact" id="payout-mobile-list"></div>
+ </div>
+ </section>
+
+ <!-- ── STATS ─────────────────────────────────────────────── -->
+ <section id="view-stats" class="view">
+ <!-- Summary breakdown -->
+ <div class="fees-box" style="margin-bottom:12px">
+ <div class="space-between" style="margin-bottom:12px">
+ <div>
+ <div class="section-title">Sales summary</div>
+ <div class="subtext">Full breakdown of revenue, profit, costs, and fees.</div>
+ </div>
+ <span class="badge badge-info" id="stats-total-badge">0 sales</span>
+ </div>
+ <div class="stats-summary-grid">
+ <div class="metric" style="margin:0">
+ <div class="metric-label">Total revenue</div>
+ <div class="metric-val" id="fee-total-revenue">$0.00</div>
+ <div class="metric-sub">Sales total</div>
+ </div>
+ <div class="metric" style="margin:0">
+ <div class="metric-label">Total profit</div>
+ <div class="metric-val green" id="fee-profit-after">$0.00</div>
+ <div class="metric-sub">After fees &amp; costs</div>
+ </div>
+ <div class="metric" style="margin:0">
+ <div class="metric-label">Total ROI</div>
+ <div class="metric-val" id="fee-total-roi">0.0%</div>
+ <div class="metric-sub">Return on investment</div>
+ </div>
+ <div class="metric" style="margin:0">
+ <div class="metric-label">Total fees</div>
+ <div class="metric-val red" id="fee-total">$0.00</div>
+ <div class="metric-sub">Depop fees paid</div>
+ </div>
+ <div class="metric" style="margin:0">
+ <div class="metric-label">Item cost</div>
+ <div class="metric-val" id="fee-item-cost">$0.00</div>
+ <div class="metric-sub">Sourcing spend</div>
+ </div>
+ <div class="metric" style="margin:0">
+ <div class="metric-label">Avg profit / sale</div>
+ <div class="metric-val green" id="fee-avg-profit">$0.00</div>
+ <div class="metric-sub">Per sale</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Items + Buyers side by side -->
+ <div class="stats-main-grid" style="margin-bottom:12px">
+ <div class="top-item-box">
+ <div class="section-title">Most sold items</div>
+ <div class="subtext">Ranked by repeat sales and total profit.</div>
+ <div id="top-item" style="margin-top:10px"></div>
+ <div class="top-list" id="top-item-list"></div>
+ </div>
+
+ <div class="buyers-box">
+ <div class="section-title">Top buyers</div>
+ <div class="subtext">Repeat buyers and how much they spent.</div>
+ <div class="buyers-list" id="buyers-list"></div>
+ </div>
+ </div>
+
+ <!-- Insights + Day tracker + Missing costs -->
+ <div class="stats-bottom-grid">
+ <div class="insight-box">
+ <div class="section-title">Smart insights</div>
+ <div class="subtext">Patterns and tips from your sales data.</div>
+ <div class="insight-list" id="insights"></div>
+ </div>
+
+ <div class="chart-box">
+ <div class="section-title">Day of week tracker</div>
+ <div class="subtext">Which days sell best.</div>
+ <div class="day-list" id="day-list"></div>
+ </div>
+
+ <div class="chart-box">
+ <div class="section-title">Missing cost items</div>
+ <div class="subtext">These need a cost filled in for accurate profit.</div>
+ <div id="missing-costs" class="top-list"></div>
+ </div>
+ </div>
+ </section>
+
+ <section id="view-log" class="view">
+ <div class="space-between" style="margin-bottom:12px">
+ <div>
+ <div class="section-title">Sales log</div>
+ <div class="subtext">Search, filter, sort, duplicate, and edit sales safely.</div>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+ <button class="btn btn-primary" id="add-sale-btn-2" onclick="window._openSaleModal()">+ Log sale</button>
+ <button class="btn" id="export-csv-btn" title="Export all sales as CSV (can be re-imported)">↓ Export CSV</button>
+ </div>
+ </div>
+
+ <div class="controls">
+ <input id="search" type="text" placeholder="Search by item, buyer, or notes" />
+ <select id="filter-status">
+ <option value="">All status</option>
+ <option value="paid">Paid</option>
+ <option value="unpaid">Unpaid</option>
+ </select>
+ <input id="filter-buyer" type="text" placeholder="Buyer filter" />
+ <input id="filter-from" type="date" />
+ <input id="filter-to" type="date" />
+ <select id="sort-by">
+ <option value="newest">Newest first</option>
+ <option value="oldest">Oldest first</option>
+ <option value="profit-high">Highest profit</option>
+ <option value="profit-low">Lowest profit</option>
+ <option value="roi-high">Highest ROI</option>
+ <option value="sold-high">Highest sale price</option>
+ <option value="sold-low">Lowest sale price</option>
+ </select>
+ </div>
+
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr>
+ <th style="width:18%">Item</th>
+ <th style="width:9%">Date</th>
+ <th style="width:8%">Photo</th>
+ <th style="width:9%">Cost</th>
+ <th style="width:9%">Sold</th>
+ <th style="width:8%">Fees</th>
+ <th style="width:9%">Profit</th>
+ <th style="width:8%">ROI</th>
+ <th style="width:7%">Status</th>
+ <th style="width:10%">Buyer</th>
+ <th style="width:8%">Notes</th>
+ <th style="width:5%"></th>
+ </tr>
+ </thead>
+ <tbody id="sales-body"></tbody>
+ </table>
+ </div>
+
+ <div id="mobile-list" class="mobile-list"></div>
+ </section>
+
+ <section id="view-calc" class="view">
+ <div class="section-title">Profit calculator</div>
+ <div class="subtext">Enter a cost and desired profit to get a smart listing price. The fee rate is based on your sales history.</div>
+
+ <div class="calc-box" style="margin-top:12px">
+ <div class="card card-pad">
+ <div class="calc-grid">
+ <div class="form-row">
+ <label>Item cost</label>
+ <input id="calc-cost" type="number" min="0" step="0.01" placeholder="6.50" />
+ </div>
+ <div class="form-row">
+ <label>Desired profit</label>
+ <input id="calc-profit" type="number" min="0" step="0.01" placeholder="10.00" />
+ </div>
+ <div class="form-row">
+ <label>Shipping you cover</label>
+ <input id="calc-ship" type="number" min="0" step="0.01" placeholder="0.00" />
+ </div>
+ <div class="form-row">
+ <label>Manual listing price</label>
+ <input id="calc-price" type="number" min="0" step="0.01" placeholder="20.00" />
+ </div>
+ </div>
+ <label class="bundle-toggle" style="margin-top:12px" id="calc-boost-toggle-label">
+ <input type="checkbox" id="calc-boost-toggle" checked />
+ <div>
+ <div class="bundle-toggle-label">Boosted listing</div>
+ <div class="bundle-toggle-sub">ON = avg processing + avg boosting fee. OFF = avg processing only.</div>
+ </div>
+ </label>
+ <div class="subtext" style="margin-top:10px" id="calc-fee-source">Calculating fee rate...</div>
+ <button class="btn btn-primary" id="calc-btn" style="margin-top:12px;width:100%;padding:12px;font-size:15px">Calculate</button>
+ </div>
+
+ <div class="calc-output">
+ <div class="calc-card">
+ <div class="label">Recommended listing price</div>
+ <div class="big" id="suggested-price">—</div>
+ <div class="sub">Based on desired profit and your average fee rate.</div>
+ </div>
+ <div class="calc-card">
+ <div class="label">Expected profit</div>
+ <div class="big" id="expected-profit">—</div>
+ <div class="sub">At the suggested listing price.</div>
+ </div>
+ <div class="calc-card">
+ <div class="label">Fee rate used</div>
+ <div class="big" id="used-fee-rate">—</div>
+ <div class="sub">Based on paid sales with fee data.</div>
+ </div>
+ </div>
+
+ <div class="calc-output">
+ <div class="calc-card">
+ <div class="label">Profit at manual price</div>
+ <div class="big" id="manual-profit">—</div>
+ <div class="sub">Lets you test different prices fast.</div>
+ </div>
+ <div class="calc-card">
+ <div class="label">Break-even price</div>
+ <div class="big" id="break-even">—</div>
+ <div class="sub">What you need to charge to avoid loss.</div>
+ </div>
+ <div class="calc-card">
+ <div class="label">ROI at manual price</div>
+ <div class="big" id="manual-roi">—</div>
+ <div class="sub">Return on item cost.</div>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- ── EXTRA ─────────────────────────────────────────────── -->
+ <section id="view-extra" class="view">
+
+ <!-- ──AI Flat Lay Generator ──────────────────────────────── -->
+ <div class="extra-card" style="margin-bottom:16px">
+ <div class="section-title" style="margin-bottom:4px">AI Flat Lay Generator</div>
+ <div class="subtext" style="margin-bottom:16px">Upload your clothing item + base photo. AI places the exact clothing item onto the base like a real iPhone flat lay photo.</div>
+
+ <!-- fal.ai key input -->
+ <div id="fal-key-row" style="margin-bottom:14px;background:var(--panel2);border:1px solid var(--border2);border-radius:12px;padding:12px">
+ <div style="font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px">fal.ai API Key</div>
+ <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+ <input type="password" id="fal-key-input" placeholder="fal_..." style="flex:1;min-width:0;font-family:monospace;font-size:13px" />
+ <button class="btn" id="fal-key-save" style="white-space:nowrap;flex:none">Save key</button>
+ </div>
+ <div style="margin-top:6px;font-size:11px;color:var(--muted2)">Get a free key at <a href="https://fal.ai" target="_blank" style="color:var(--blue);text-decoration:none">fal.ai</a> → Dashboard → API Keys. Key is saved locally in your browser.</div>
+ <div id="fal-key-status" style="margin-top:6px;font-size:12px;display:none"></div>
+ </div>
+
+ <div class="extra-upload-grid">
+ <div class="extra-upload-zone" id="zone-clothing">
+ <input type="file" id="inp-clothing" accept="image/*" style="display:none">
+ <div class="extra-upload-inner" id="preview-clothing">
+ <div class="extra-upload-icon"></div>
+ <div class="extra-upload-label">Image 1 — Clothing Item</div>
+ <div class="extra-upload-sub">Tap to upload (exact item, no changes)</div>
+ </div>
+ </div>
+ <div class="extra-upload-zone" id="zone-base">
+ <input type="file" id="inp-base" accept="image/*" style="display:none">
+ <div class="extra-upload-inner" id="preview-base">
+ <div class="extra-upload-icon"></div>
+ <div class="extra-upload-label">Image 2 — Base / Rug (locked)</div>
+ <div class="extra-upload-sub">Tap to upload (stays unchanged)</div>
+ </div>
+ </div>
+ </div>
+
+ <button class="btn btn-primary extra-gen-btn" id="gen-outfit-btn" style="margin-top:14px;width:100%;padding:14px;font-size:15px;font-weight:700"> Generate flat lay</button>
+
+ <!-- Loading state -->
+ <div id="outfit-loading" style="display:none;margin-top:20px">
+ <div style="background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center">
+ <div style="display:flex;justify-content:center;margin-bottom:14px">
+ <div class="extra-spinner" style="width:36px;height:36px;border-width:3px"></div>
+ </div>
+ <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px" id="outfit-loading-text">Sending to AI...</div>
+ <div style="font-size:12px;color:var(--muted)" id="outfit-loading-sub">This usually takes 15–30 seconds</div>
+ <div id="outfit-progress-bar-wrap" style="margin-top:14px;height:4px;background:var(--panel3);border-radius:999px;overflow:hidden">
+ <div id="outfit-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#ff7a92);transition:width .4s ease;border-radius:999px"></div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Result: generated image -->
+ <div id="outfit-result" style="margin-top:16px;display:none">
+ <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Generated flat lay</div>
+ <img id="outfit-img" src="" alt="Generated flat lay" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);display:block;background:#111" />
+ <!-- Keep canvas hidden for download fallback -->
+ <canvas id="outfit-canvas" style="display:none"></canvas>
+ <button class="btn btn-primary" id="outfit-download-btn" style="margin-top:10px;width:100%;padding:12px;font-size:14px"> Download image</button>
+ </div>
+
+ <div id="outfit-status" style="margin-top:12px;font-size:13px;border-radius:10px;padding:10px 12px;display:none"></div>
+ </div>
+
+ <!-- ──Caption Generator ─────────────────────────────────── -->
+ <div class="extra-card">
+ <div class="section-title" style="margin-bottom:4px">Caption Generator</div>
+ <div class="subtext" style="margin-bottom:16px">Upload a clothing photo to get a Depop-ready caption with trending hashtags.</div>
+
+ <div class="extra-upload-zone" id="zone-caption" style="max-width:340px;margin:0 auto">
+ <input type="file" id="inp-caption" accept="image/*" style="display:none">
+ <div class="extra-upload-inner" id="preview-caption">
+ <div class="extra-upload-icon"></div>
+ <div class="extra-upload-label">Clothing photo</div>
+ <div class="extra-upload-sub">Tap to upload</div>
+ </div>
+ </div>
+
+ <button class="btn btn-primary extra-gen-btn" id="gen-caption-btn" style="margin-top:14px;width:100%;padding:13px;font-size:15px"> Generate caption</button>
+ <div id="caption-result" style="margin-top:14px;display:none">
+ <div class="caption-output" id="caption-text"></div>
+ <button class="btn" id="copy-caption-btn" style="margin-top:10px;width:100%">Copy caption</button>
+ </div>
+ <div id="caption-status" style="margin-top:10px;font-size:13px;color:var(--muted);display:none"></div>
+ </div>
+
+ </section>
+
+ <!-- ── FULFILLMENT ───────────────────────────────────────── -->
+ <section id="view-fulfillment" class="view">
+
+ <div class="extra-card" style="margin-bottom:16px">
+ <div class="space-between" style="align-items:flex-start;flex-wrap:wrap;gap:12px">
+ <div>
+ <div class="section-title" style="margin-bottom:4px">Gmail connection</div>
+ <div class="subtext">Scans your Gmail for Depop sale emails so you don't have to copy orders over by hand.</div>
+ </div>
+ <span class="badge badge-unpaid" id="gmail-status-badge">Checking…</span>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+ <button class="btn btn-primary" id="gmail-connect-btn">Connect Gmail</button>
+ <button class="btn" id="gmail-scan-btn" disabled>Scan for sales</button>
+ </div>
+ <div id="gmail-scan-status" class="small muted" style="margin-top:10px"></div>
+ </div>
+
+ <div class="extra-card" style="margin-bottom:16px">
+ <div class="section-title" style="margin-bottom:4px">How ordering works</div>
+ <div class="subtext">Detected sales land in the queue below as <strong>New</strong>. Add the matching AliExpress/DSers product link or SKU, and the row moves to <strong>Ready to order</strong>. There's no direct AliExpress ordering API for personal accounts, so placing the order itself is a manual step (or handled by your own DSers/webhook automation) — this queue is where you track that it's been done.</div>
+ </div>
+
+ <div class="space-between" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+ <div>
+ <div class="section-title">Fulfillment queue</div>
+ <div class="subtext">Sales pulled from Gmail, plus any you add manually.</div>
+ </div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap">
+ <button class="btn" id="fulfillment-add-btn">+ Add manually</button>
+ <span class="badge badge-info" id="fulfillment-count-badge">0 in queue</span>
+ </div>
+ </div>
+
+ <div class="table-wrap">
+ <table>
+ <thead>
+ <tr>
+ <th style="width:20%">Item</th>
+ <th style="width:10%">Sold</th>
+ <th style="width:12%">Buyer</th>
+ <th style="width:9%">Date</th>
+ <th style="width:24%">Supplier link / SKU</th>
+ <th style="width:13%">Status</th>
+ <th style="width:12%"></th>
+ </tr>
+ </thead>
+ <tbody id="fulfillment-body"></tbody>
+ </table>
+ </div>
+ <div id="fulfillment-empty" class="subtext" style="padding:18px 4px;display:none">No orders in the queue yet. Connect Gmail and scan, or add one manually.</div>
+ <div id="fulfillment-mobile-list" class="mobile-list"></div>
+ </section>
+
+</main>
+
+<div class="modal-overlay" id="sale-modal">
+ <div class="modal">
+ <h3>Log a sale</h3>
+ <div class="form-grid">
+
+ <!-- Bundle toggle -->
+ <div style="grid-column:1/-1">
+ <label class="bundle-toggle" id="bundle-toggle-label">
+ <input type="checkbox" id="bundle-toggle" />
+ <div>
+ <div class="bundle-toggle-label">Bundle sale</div>
+ <div class="bundle-toggle-sub">Selling 2 or more items together? Enable for multi-item tracking.</div>
+ </div>
+ </label>
+ </div>
+
+ <!-- Single-item name (hidden in bundle mode) -->
+ <div class="form-row" style="grid-column:1/-1" id="single-name-row">
+ <label>Item name</label>
+ <input id="sale-name" type="text" placeholder="e.g. Y2K Baby Tee" />
+ </div>
+
+ <!-- Bundle items section (shown in bundle mode) -->
+ <div class="bundle-section hidden" id="bundle-section" style="grid-column:1/-1">
+ <div>
+ <div class="bundle-section-title"> Bundle Items</div>
+ <div style="font-size:11px;color:var(--muted)">Add each item separately for accurate cost tracking.</div>
+ </div>
+ <div class="bundle-items-list" id="bundle-items-list"></div>
+ <button type="button" class="bundle-add-btn" id="bundle-add-item">+ Add another item</button>
+ <div class="form-grid" style="gap:10px;margin-top:4px">
+ <div class="form-row">
+ <label>Bundle discount (optional)</label>
+ <input id="bundle-discount" type="number" min="0" step="0.01" placeholder="e.g. 2.00" />
+ <div style="font-size:11px;color:var(--muted);margin-top:3px">Dollar amount off the total bundle price</div>
+ </div>
+ <div class="form-row">
+ <label>Total item cost</label>
+ <div style="background:var(--panel3);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:14px;font-weight:700" id="bundle-total-cost-display">$0.00</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Core sale fields (same for both single & bundle) -->
+ <div class="form-row">
+ <label>Item cost <span style="color:var(--red)">*</span><span style="color:var(--muted);font-size:10px;font-weight:400" id="cost-label-note"></span></label>
+ <input id="sale-cost" type="number" min="0" step="0.01" placeholder="e.g. 3.50" />
+ <div id="sale-cost-error" style="color:var(--red);font-size:11px;display:none">Cost is required.</div>
+ </div>
+ <div class="form-row">
+ <label>Sold for</label>
+ <input id="sale-sold" type="number" min="0" step="0.01" placeholder="0.00" />
+ </div>
+ <div class="form-row">
+ <label>Date sold</label>
+ <input id="sale-date" type="date" />
+ </div>
+ <div class="form-row">
+ <label>Status</label>
+ <select id="sale-status">
+ <option value="paid">Paid</option>
+ <option value="unpaid">Unpaid</option>
+ </select>
+ </div>
+
+ <!-- Split fee fields -->
+ <div class="form-row">
+ <label>Depop processing fee</label>
+ <input id="sale-fee-processing" type="number" min="0" step="0.01" placeholder="blank = auto" />
+ </div>
+ <div class="form-row">
+ <label>Depop boosting fee</label>
+ <input id="sale-fee-boosting" type="number" min="0" step="0.01" placeholder="0.00 if none" />
+ </div>
+
+ <div class="form-row">
+ <label>Buyer username</label>
+ <input id="sale-buyer" type="text" placeholder="@username" />
+ </div>
+ <div class="form-row" style="grid-column:1/-1">
+ <label>Notes</label>
+ <textarea id="sale-notes" placeholder="Optional note about this sale..."></textarea>
+ </div>
+ <div class="form-row" style="grid-column:1/-1">
+ <label>Image upload</label>
+ <input id="sale-image" type="file" accept="image/*" />
+ <div id="sale-image-preview" style="margin-top:8px"></div>
+ </div>
+
+ <!-- Live preview -->
+ <div class="form-row" style="grid-column:1/-1">
+ <label>Preview</label>
+ <div class="preview">
+ <div class="row" style="justify-content:space-between">
+ <span class="muted">Processing fee</span><strong class="mono red" id="sale-preview-proc">$0.00</strong>
+ </div>
+ <div class="row" style="justify-content:space-between;margin-top:6px">
+ <span class="muted">Boosting fee</span><strong class="mono red" id="sale-preview-boost">$0.00</strong>
+ </div>
+ <div class="row" style="justify-content:space-between;margin-top:6px">
+ <span class="muted">Total fees</span><strong class="mono red" id="sale-preview-fee">$0.00</strong>
+ </div>
+ <div class="row" style="justify-content:space-between;margin-top:6px" id="bundle-preview-row" style="display:none">
+ <span class="muted">Bundle discount</span><strong class="mono red" id="sale-preview-discount">-$0.00</strong>
+ </div>
+ <div class="row" style="justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+ <span class="muted">Estimated profit</span><strong class="mono" id="sale-preview-profit">$0.00</strong>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="modal-actions">
+ <button class="btn" id="sale-cancel">Cancel</button>
+ <button class="btn btn-primary" id="sale-save">Save sale</button>
+ </div>
+ </div>
+</div>
+
+<div class="modal-overlay" id="import-modal">
+ <div class="modal">
+ <h3>Import CSV</h3>
+ <div class="subtext" id="import-help">Drop a Depop export and I will map the columns for you.</div>
+ <div class="import-summary" id="import-summary"></div>
+ <div class="form-grid" style="margin-top:12px">
+ <label class="file-pill">
+ <span>
+ <strong>Merge only</strong><br />
+ <span class="tiny muted">Adds new rows and skips duplicates.</span>
+ </span>
+ <input type="radio" name="import-mode" value="merge" checked />
+ </label>
+ <label class="file-pill">
+ <span>
+ <strong>Replace all</strong><br />
+ <span class="tiny muted">Overwrites your tracker with the CSV.</span>
+ </span>
+ <input type="radio" name="import-mode" value="replace" />
+ </label>
+ </div>
+ <div class="preview" style="margin-top:12px">
+ <div class="space-between">
+ <div>
+ <strong>Import preview</strong>
+ <div class="tiny muted">First rows shown below. Missing costs are flagged in red.</div>
+ </div>
+ <span class="badge badge-info" id="import-count-badge">0 rows</span>
+ </div>
+ <div style="overflow:auto">
+ <table class="import-table">
+ <thead>
+ <tr>
+ <th>Item</th>
+ <th>Date</th>
+ <th>Sold</th>
+ <th>Fees</th>
+ <th>Buyer</th>
+ <th>Cost</th>
+ <th>Status</th>
+ <th>Dups</th>
+ </tr>
+ </thead>
+ <tbody id="import-preview-body"></tbody>
+ </table>
+ </div>
+ </div>
+ <div class="modal-actions">
+ <button class="btn" id="import-cancel">Cancel</button>
+ <button class="btn btn-primary" id="import-confirm">Import</button>
+ </div>
+ </div>
+</div>
+
+<div class="modal-overlay" id="cost-modal">
+ <div class="modal">
+ <h3>Add item costs</h3>
+ <div class="subtext" style="margin-bottom:14px">Enter what you paid for each item before importing. This is required for accurate profit tracking.</div>
+ <div id="cost-modal-progress" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+ <div id="cost-modal-item-info" style="background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px">
+ <div style="font-weight:700;font-size:14px" id="cost-modal-name"></div>
+ <div style="font-size:12px;color:var(--muted);margin-top:4px" id="cost-modal-detail"></div>
+ </div>
+ <div class="form-row">
+ <label>What did you pay for this item? <span style="color:var(--red)">*</span></label>
+ <input id="cost-modal-input" type="number" min="0" step="0.01" placeholder="e.g. 3.50" style="font-size:18px;padding:14px" />
+ <div id="cost-modal-error" style="color:var(--red);font-size:11px;display:none;margin-top:4px">Please enter the item cost to continue.</div>
+ </div>
+ <div class="modal-actions" style="margin-top:14px">
+ <button class="btn" id="cost-modal-skip">Skip (set $0)</button>
+ <button class="btn btn-primary" id="cost-modal-next">Next →</button>
+ </div>
+ </div>
+</div>
+<div class="undo-bar" id="undo-bar">
+ <span id="undo-text" class="small">Sale deleted</span>
+ <button class="btn btn-primary" id="undo-btn">Undo</button>
+</div>
+
+<script>
+(function(){
+ window.setView=function(v){document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));document.querySelectorAll('[id^="view-"]').forEach(el=>el.classList.remove('active'));var tgt=document.getElementById('view-'+v);if(tgt)tgt.classList.add('active');};
+const STORAGE_KEY = 'depop-tracker-v6';
+ const GOAL_KEY = 'depop-tracker-goals-v1';
+ const LEGACY_KEY = 'depop-v5';
+ let sales = [];
+ sales = loadSales();
+ let pendingImport = [];
+ let pendingImportSummary = null;
+ let editingImageData = '';
+ let undoState = null;
+ let toastTimer = null;
+ let undoTimer = null;
+
+ const els = {
+ tabs:[...document.querySelectorAll('.tab')],
+ views: {
+ dashboard: document.getElementById('view-dashboard'),
+ stats: document.getElementById('view-stats'),
+ log: document.getElementById('view-log'),
+ calc: document.getElementById('view-calc'),
+ extra: document.getElementById('view-extra'),
+ fulfillment: document.getElementById('view-fulfillment')
+ },
+ heroGrid: document.getElementById('hero-grid'),
+ metricGrid: document.getElementById('metric-grid'),
+ statsTotalBadge: document.getElementById('stats-total-badge'),
+ bestSale: document.getElementById('best-sale'),
+ bestCount: document.getElementById('best-count'),
+ monthlyChart: document.getElementById('monthly-chart'),
+ insights: document.getElementById('insights'),
+ buyersList: document.getElementById('buyers-list'),
+ topItem: document.getElementById('top-item'),
+ topItemList: document.getElementById('top-item-list'),
+ dayList: document.getElementById('day-list'),
+ missingCosts: document.getElementById('missing-costs'),
+ salesBody: document.getElementById('sales-body'),
+ mobileList: document.getElementById('mobile-list'),
+ importModal: document.getElementById('import-modal'),
+ importHelp: document.getElementById('import-help'),
+ importSummary: document.getElementById('import-summary'),
+ importCountBadge: document.getElementById('import-count-badge'),
+ importPreviewBody: document.getElementById('import-preview-body'),
+ saleModal: document.getElementById('sale-modal'),
+ salePreviewFee: document.getElementById('sale-preview-fee'),
+ salePreviewProfit: document.getElementById('sale-preview-profit'),
+ saleImagePreview: document.getElementById('sale-image-preview'),
+ toast: document.getElementById('toast'),
+ undoBar: document.getElementById('undo-bar'),
+ undoText: document.getElementById('undo-text'),
+ goalProfit: document.getElementById('goal-profit'),
+ goalSales: document.getElementById('goal-sales'),
+ goalProfitBar: document.getElementById('goal-profit-bar'),
+ goalSalesBar: document.getElementById('goal-sales-bar'),
+ goalProfitText: document.getElementById('goal-profit-text'),
+ goalSalesText: document.getElementById('goal-sales-text')
+ };
+
+ const goalState = loadGoals();
+
+ function loadSales(){
+ let raw = localStorage.getItem(STORAGE_KEY);
+ let arr = [];
+ try { arr = raw ? JSON.parse(raw) : []; } catch (e) { arr = []; }
+ if (!Array.isArray(arr)) arr = [];
+ arr = arr.map((s, idx) => {
+ // Backward compat: old records have `fees` but no split fields — put it all in processing
+ const hasNewFields = 'feeProcessing' in s || 'feeBoosting' in s;
+ const feeProcessing = hasNewFields ? num(s.feeProcessing) : num(s.fees);
+ const feeBoosting = hasNewFields ? num(s.feeBoosting) : 0;
+ return {
+ id: s.id || uid(),
+ name: s.name || 'Unknown item',
+ date: s.date || todayISO(),
+ cost: num(s.cost),
+ sold: num(s.sold),
+ feeProcessing,
+ feeBoosting,
+ fees: round2(feeProcessing + feeBoosting),
+ ship: num(s.ship),
+ status: s.status === 'unpaid' ? 'unpaid' : 'paid',
+ buyer: s.buyer || '—',
+ notes: s.notes || '',
+ image: s.image || '',
+ paymentStatus: s.paymentStatus || s.status || '',
+ bundle: s.bundle || null,
+ bundleDiscount: num(s.bundleDiscount),
+ payoutArrival: s.payoutArrival || '',
+ payoutEst: s.payoutEst || '',
+ raw: s.raw || {}
+ };
+ });
+ persistSales(arr);
+ return arr;
+ }
+
+ function loadGoals(){
+ const defaults = { profit: 500, sales: 30 };
+ try {
+ return Object.assign(defaults, JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'));
+ } catch (e) {
+ return defaults;
+ }
+ }
+
+ function saveGoals(){
+ localStorage.setItem(GOAL_KEY, JSON.stringify({ profit: num(els.goalProfit.value), sales: num(els.goalSales.value) }));
+ }
+
+ function persistSales(arr){
+ sales = arr;
+ localStorage.setItem(STORAGE_KEY, JSON.stringify(sales));
+ }
+
+ function uid(){
+ if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+ return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+ }
+
+ // Count items sold: bundles count as however many items are in the bundle
+ function countSales(arr){
+ return (arr || []).reduce((total, s) => {
+ if (s.bundle && Array.isArray(s.bundle) && s.bundle.length > 1) {
+ return total + s.bundle.length;
+ }
+ return total + 1;
+ }, 0);
+ }
+
+ function todayISO(){
+ const d = new Date();
+ const offset = d.getTimezoneOffset();
+ const local = new Date(d.getTime() - offset * 60000);
+ return local.toISOString().slice(0,10);
+ }
+
+ function num(v){
+ // Strip $, commas, and handle Depop's "-" and "N/A" placeholders
+ const cleaned = String(v ?? '').replace(/[$,]/g, '').trim();
+ if (!cleaned || cleaned === '-' || cleaned === 'N/A') return 0;
+ const n = parseFloat(cleaned);
+ return isNaN(n) ? 0 : n;
+ }
+
+ function fmtMoney(v){
+ return '$' + Math.abs(num(v)).toFixed(2);
+ }
+
+ function fmtSigned(v){
+ const n = num(v);
+ return (n < 0 ? '-' : '') + '$' + Math.abs(n).toFixed(2);
+ }
+
+ function clamp(n,min,max){
+ return Math.max(min, Math.min(max, n));
+ }
+
+ function esc(s){
+ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+ }
+
+ function toast(msg, ms=2800){
+ clearTimeout(toastTimer);
+ els.toast.textContent = msg;
+ els.toast.classList.add('show');
+ toastTimer = setTimeout(() => els.toast.classList.remove('show'), ms);
+ }
+ window.toast = toast;
+
+ function showUndo(msg, onUndo){
+ clearTimeout(undoTimer);
+ undoState = onUndo;
+ els.undoText.textContent = msg;
+ els.undoBar.classList.add('show');
+ undoTimer = setTimeout(() => {
+ els.undoBar.classList.remove('show');
+ undoState = null;
+ }, 5000);
+ }
+
+ document.getElementById('undo-btn').addEventListener('click', () => {
+ if (typeof undoState === 'function') {
+ undoState();
+ undoState = null;
+ els.undoBar.classList.remove('show');
+ toast('Restored.');
+ }
+ });
+
+ // ── Clear All / Restore ──────────────────────────────────────────────────
+ let clearedSnapshot = null; // { sales, goals }
+
+ const clearAllBtn = document.getElementById('clear-all-btn');
+ const restoreBtn = document.getElementById('restore-btn');
+
+ clearAllBtn.addEventListener('click', () => {
+ if (!confirm('Clear ALL sales data and goals? You can restore it immediately after.')) return;
+
+ // Snapshot current state
+ clearedSnapshot = {
+ sales: JSON.parse(JSON.stringify(sales)),
+ goals: {
+ profit: num(els.goalProfit.value),
+ sales: num(els.goalSales.value)
+ }
+ };
+
+ // Wipe everything
+ persistSales([]);
+ localStorage.setItem(GOAL_KEY, JSON.stringify({ profit: 500, sales: 30 }));
+ els.goalProfit.value = 500;
+ els.goalSales.value = 500;
+ renderAll();
+ renderGoals({ thisMonthProfit: 0, thisMonthSales: 0 });
+
+ restoreBtn.classList.remove('hidden');
+ toast('All data cleared. Click ↩ Restore to undo.', 4000);
+ });
+
+ restoreBtn.addEventListener('click', () => {
+ if (!clearedSnapshot) return;
+ persistSales(clearedSnapshot.sales);
+ localStorage.setItem(GOAL_KEY, JSON.stringify(clearedSnapshot.goals));
+ els.goalProfit.value = clearedSnapshot.goals.profit;
+ els.goalSales.value = clearedSnapshot.goals.sales;
+ clearedSnapshot = null;
+ restoreBtn.classList.add('hidden');
+ renderAll();
+ renderGoals({
+ thisMonthProfit: sales.filter(isThisMonth).reduce((a, s) => a + calcProfit(s), 0),
+ thisMonthSales: sales.filter(isThisMonth).length
+ });
+ toast('Data restored successfully.');
+ });
+ // ────────────────────────────────────────────────────────────────────────
+
+ function setView(name){
+ Object.entries(els.views).forEach(([k, el]) => el.classList.toggle('active', k === name));
+ els.tabs.forEach(t => t.classList.toggle('active', t.dataset.view === name));
+ renderAll();
+ }
+ window.setView = setView;
+
+
+ function calcProfit(s){
+ const totalFees = round2(num(s.feeProcessing) + num(s.feeBoosting));
+ return round2(num(s.sold) - num(s.cost) - totalFees - num(s.ship) - num(s.bundleDiscount));
+ }
+
+ function calcROI(s){
+ return num(s.cost) > 0 ? round1((calcProfit(s) / num(s.cost)) * 100) : null;
+ }
+
+ function round2(v){ return Math.round(num(v) * 100) / 100; }
+ function round1(v){ return Math.round(num(v) * 10) / 10; }
+
+ function normalizedDate(s){
+ if (!s || s === 'N/A' || s === '-') return '';
+ const str = String(s).trim();
+ // MM/DD/YYYY (Depop export format)
+ const mdy = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+ if (mdy) return `${mdy[3]}-${mdy[1].padStart(2,'0')}-${mdy[2].padStart(2,'0')}`;
+ // YYYY-MM-DD
+ if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+ // DD/MM/YYYY or MM-DD-YYYY variants
+ const parts = str.split(/[\/\-]/);
+ if (parts.length === 3) {
+ if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+ if (parts[2].length === 4) return `${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+ }
+ // Try native Date as last resort
+ const d = new Date(str);
+ if (!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+ return str;
+ }
+
+ function monthKeyFromDate(dateStr){
+ const d = new Date(dateStr);
+ if (isNaN(d.getTime())) return '';
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+ }
+
+ function monthLabel(key){
+ if (!key) return '';
+ const [y,m] = key.split('-').map(Number);
+ const d = new Date(y, m-1, 1);
+ return d.toLocaleString(undefined, { month:'short', year:'numeric' });
+ }
+
+ function sameDayOrLater(dateStr, fromStr){
+ if (!fromStr) return true;
+ return normalizedDate(dateStr) >= normalizedDate(fromStr);
+ }
+
+ function sameDayOrBefore(dateStr, toStr){
+ if (!toStr) return true;
+ return normalizedDate(dateStr) <= normalizedDate(toStr);
+ }
+
+ function fingerprint(s){
+ return [
+ normalizedDate(s.date),
+ String(s.name || '').trim().toLowerCase(),
+ String(s.buyer || '').trim().toLowerCase(),
+ String(num(s.sold).toFixed(2)),
+ String(num(s.fees).toFixed(2))
+ ].join('|');
+ }
+
+ function updateSale(saleId, patch){
+ const idx = sales.findIndex(s => s.id === saleId);
+ if (idx < 0) return;
+ sales[idx] = Object.assign({}, sales[idx], patch);
+ persistSales(sales);
+ renderAll();
+ }
+
+ function addSale(sale, toTop=true){
+ const item = Object.assign({
+ id: uid(),
+ name:'Unknown item',
+ date: todayISO(),
+ cost:0,
+ sold:0,
+ feeProcessing:0,
+ feeBoosting:0,
+ fees:0,
+ ship:0,
+ status:'paid',
+ buyer:'—',
+ notes:'',
+ image:'',
+ raw:{}
+ }, sale);
+ if (toTop) sales.unshift(item); else sales.push(item);
+ persistSales(sales);
+ renderAll();
+ }
+
+ function deleteSaleById(id){
+ const idx = sales.findIndex(s => s.id === id);
+ if (idx < 0) return;
+ const removed = sales[idx];
+ sales.splice(idx,1);
+ persistSales(sales);
+ renderAll();
+ showUndo(`Deleted ${removed.name}`, () => {
+ sales.splice(idx, 0, removed);
+ persistSales(sales);
+ renderAll();
+ });
+ toast('Deleted. You can undo.');
+ }
+
+ function duplicateSaleById(id){
+ const s = sales.find(x => x.id === id);
+ if (!s) return;
+ addSale({
+ name: s.name,
+ date: todayISO(),
+ cost: num(s.cost),
+ sold: num(s.sold),
+ feeProcessing: num(s.feeProcessing),
+ feeBoosting: num(s.feeBoosting),
+ fees: num(s.fees),
+ ship: num(s.ship),
+ status: 'unpaid',
+ buyer: '—',
+ notes: s.notes || '',
+ image: s.image || '',
+ bundle: s.bundle || null,
+ bundleDiscount: num(s.bundleDiscount),
+ raw: s.raw || {}
+ });
+ toast('Duplicated.');
+ }
+
+ function currentMonthKey(){
+ const d = new Date();
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+ }
+
+ function currentWeekStart(){
+ const d = new Date();
+ const day = d.getDay();
+ const diff = (day + 6) % 7;
+ d.setDate(d.getDate() - diff);
+ return d.toISOString().slice(0,10);
+ }
+
+ function isThisMonth(s){
+ return monthKeyFromDate(normalizedDate(s.date)) === currentMonthKey();
+ }
+
+ function isThisWeek(s){
+ return normalizedDate(s.date) >= currentWeekStart();
+ }
+
+ function averageFeeRate(includeBoosting=true){
+ // For processing fee average, use sales that have a processing fee recorded
+ const procSales = sales.filter(s => num(s.sold) > 0 && num(s.feeProcessing) > 0);
+ // For boosting fee average, use only sales that have a boosting fee recorded
+ const boostSales = sales.filter(s => num(s.sold) > 0 && num(s.feeBoosting) > 0);
+
+ if (includeBoosting) {
+ // Calculate avg processing rate
+ let avgProcRate;
+ if (!procSales.length) {
+ avgProcRate = 0.10;
+ } else {
+ const totalProcFees = procSales.reduce((a,s) => a + num(s.feeProcessing), 0);
+ const totalProcSold = procSales.reduce((a,s) => a + num(s.sold), 0);
+ avgProcRate = totalProcSold ? totalProcFees / totalProcSold : 0.10;
+ }
+ // Calculate avg boosting rate from boosted sales only
+ let avgBoostRate;
+ if (!boostSales.length) {
+ avgBoostRate = 0.12; // default fallback if no boosted sales yet
+ } else {
+ const totalBoostFees = boostSales.reduce((a,s) => a + num(s.feeBoosting), 0);
+ const totalBoostSold = boostSales.reduce((a,s) => a + num(s.sold), 0);
+ avgBoostRate = totalBoostSold ? totalBoostFees / totalBoostSold : 0.12;
+ }
+ const rate = avgProcRate + avgBoostRate;
+ if (!procSales.length && !boostSales.length) {
+ return {
+ rate,
+ source: `No fee data yet — using default 10% processing + 12% boosting = ${(rate*100).toFixed(1)}% total rate. Log sales with fees to improve this.`
+ };
+ }
+ const procNote = procSales.length
+ ? `${(avgProcRate*100).toFixed(1)}% avg processing (${procSales.length} sale${procSales.length===1?'':'s'})`
+ : `10% default processing`;
+ const boostNote = boostSales.length
+ ? `${(avgBoostRate*100).toFixed(1)}% avg boosting (${boostSales.length} sale${boostSales.length===1?'':'s'})`
+ : `12% default boosting`;
+ return {
+ rate,
+ source: `${procNote} + ${boostNote} = <strong>${(rate*100).toFixed(1)}%</strong> total rate.`
+ };
+ } else {
+ // OFF: average processing fee only
+ if (!procSales.length) {
+ return {
+ rate: 0.10,
+ source: `No fee data yet — using default 10% processing fee rate. Log sales with fees to improve this.`
+ };
+ }
+ const totalFees = procSales.reduce((a,s) => a + num(s.feeProcessing), 0);
+ const totalSold = procSales.reduce((a,s) => a + num(s.sold), 0);
+ const rate = totalSold ? totalFees / totalSold : 0.10;
+ return {
+ rate,
+ source: `Averaged from ${procSales.length} sale${procSales.length===1?'':'s'} with processing fee data — <strong>${(rate*100).toFixed(1)}%</strong> avg processing rate (no boosting).`
+ };
+ }
+ }
+
+ function renderMetrics(){
+ const totalRevenue = sales.reduce((a,s)=>a+num(s.sold),0);
+ const totalFees = sales.reduce((a,s)=>a+num(s.feeProcessing)+num(s.feeBoosting),0);
+ const totalCost = sales.reduce((a,s)=>a+num(s.cost),0);
+ const profitAfterFees = sales.reduce((a,s)=>a+calcProfit(s),0);
+ const totalSalesCount = countSales(sales);
+ const avgSalePrice = totalSalesCount ? totalRevenue / totalSalesCount : 0;
+ const avgProfit = totalSalesCount ? profitAfterFees / totalSalesCount : 0;
+ const totalROI = totalCost ? (profitAfterFees/totalCost)*100 : 0;
+ const unpaidMoney = sales.filter(s => s.status === 'unpaid').reduce((a,s)=>a+num(s.sold),0);
+ const zeroCostCount = sales.filter(s => num(s.cost) === 0).length;
+ const thisWeekProfit = sales.filter(isThisWeek).reduce((a,s)=>a+calcProfit(s),0);
+ const thisMonthProfit = sales.filter(isThisMonth).reduce((a,s)=>a+calcProfit(s),0);
+
+ // Hero: big 3 on dashboard
+ const heroCards = [
+ { label:'Total revenue', val: fmtMoney(totalRevenue), sub: `${totalSalesCount} sale${totalSalesCount===1?'':'s'} tracked`, color:'neutral' },
+ { label:'Total profit', val: fmtSigned(profitAfterFees), sub:'After all fees & costs', color: profitAfterFees >= 0 ? 'green' : 'red' },
+ { label:'Total ROI', val: `${totalCost ? round1(totalROI).toFixed(1) : '0.0'}%`, sub:'Return on sourcing cost', color: totalROI >= 0 ? 'green' : 'red' }
+ ];
+ els.heroGrid.innerHTML = heroCards.map(c => `
+ <div class="hero-metric">
+ <div class="hero-metric-label">${c.label}</div>
+ <div class="hero-metric-val ${c.color}">${c.val}</div>
+ <div class="hero-metric-sub">${c.sub}</div>
+ </div>
+ `).join('');
+
+ // Secondary metric cards on dashboard
+ const secondaryCards = [
+ ['This week', fmtSigned(thisWeekProfit), 'Profit since Monday', thisWeekProfit >= 0 ? 'green' : 'red'],
+ ['This month', fmtSigned(thisMonthProfit), 'Profit this month', thisMonthProfit >= 0 ? 'green' : 'red'],
+ ['Avg sale price', fmtMoney(avgSalePrice), 'Per sale', 'neutral'],
+ ['Avg profit', fmtSigned(avgProfit), 'Per sale', avgProfit >= 0 ? 'green' : 'red'],
+ ['Unpaid money', fmtMoney(unpaidMoney), 'Marked unpaid', unpaidMoney > 0 ? 'yellow' : 'neutral'],
+ ['$0 cost items', String(zeroCostCount), 'Need cost updates', zeroCostCount ? 'red' : 'neutral']
+ ];
+ els.metricGrid.innerHTML = secondaryCards.map(c => `
+ <div class="metric">
+ <div class="metric-label">${c[0]}</div>
+ <div class="metric-val ${c[3]}">${c[1]}</div>
+ <div class="metric-sub">${c[2]}</div>
+ </div>
+ `).join('');
+
+ // Best sale
+ const best = [...sales].sort((a,b)=>calcProfit(b)-calcProfit(a))[0];
+ els.bestCount.textContent = `${totalSalesCount} sales`;
+ els.bestSale.innerHTML = best ? `
+ <div class="cell-flex">
+ <div class="photo-slot">${best.image ? `<img src="${best.image}" alt="">` : 'No photo'}</div>
+ <div class="cell-stack" style="min-width:0">
+ <div class="item-name">${esc(best.name)}</div>
+ <div class="tiny muted">${normalizedDate(best.date)} · @${esc(best.buyer)}</div>
+ <div class="tiny"><span class="badge badge-paid">Profit</span><strong class="${calcProfit(best)>=0?'green':'red'} mono">${fmtSigned(calcProfit(best))}</strong><span class="badge badge-info">ROI ${best.cost>0 ? `${round1(calcROI(best)).toFixed(1)}%` : 'N/A'}</span></div>
+ </div>
+ </div>
+ ` : `<div class="muted">No sales yet.</div>`;
+
+ // Stats tab summary numbers
+ if (els.statsTotalBadge) els.statsTotalBadge.textContent = `${totalSalesCount} sale${totalSalesCount===1?'':'s'}`;
+ document.getElementById('fee-total').textContent = fmtMoney(totalFees);
+ document.getElementById('fee-total-revenue').textContent = fmtMoney(totalRevenue);
+ const feeProfitEl = document.getElementById('fee-profit-after');
+ feeProfitEl.textContent = fmtSigned(profitAfterFees);
+ feeProfitEl.className = 'metric-val ' + (profitAfterFees >= 0 ? 'green' : 'red');
+ const roiEl = document.getElementById('fee-total-roi');
+ roiEl.textContent = totalCost ? `${round1(totalROI).toFixed(1)}%` : '0.0%';
+ roiEl.className = 'metric-val ' + (totalROI >= 0 ? 'green' : 'red');
+ document.getElementById('fee-item-cost').textContent = fmtMoney(totalCost);
+ const avgProfitEl = document.getElementById('fee-avg-profit');
+ avgProfitEl.textContent = fmtSigned(avgProfit);
+ avgProfitEl.className = 'metric-val ' + (avgProfit >= 0 ? 'green' : 'red');
+
+ renderGoals({thisMonthProfit, thisMonthSales: countSales(sales.filter(isThisMonth))});
+ renderMonthlyChart();
+ renderTopItems();
+ renderTopBuyers();
+ renderInsights({totalRevenue,totalFees,totalCost,profitAfterFees,avgSalePrice});
+ renderDayTracker();
+ renderMissingCosts();
+ }
+
+ function renderGoals(stats){
+ els.goalProfit.value = goalState.profit ?? 500;
+ els.goalSales.value = goalState.sales ?? 30;
+ const pGoal = num(els.goalProfit.value);
+ const sGoal = num(els.goalSales.value);
+ const pPct = pGoal ? clamp((stats.thisMonthProfit / pGoal) * 100, 0, 100) : 0;
+ const sPct = sGoal ? clamp((stats.thisMonthSales / sGoal) * 100, 0, 100) : 0;
+ els.goalProfitBar.style.width = pPct + '%';
+ els.goalSalesBar.style.width = sPct + '%';
+ els.goalProfitText.textContent = `${fmtMoney(stats.thisMonthProfit)} / ${fmtMoney(pGoal)}`;
+ els.goalSalesText.textContent = `${stats.thisMonthSales} / ${sGoal}`;
+ if (stats.thisMonthProfit >= pGoal && pGoal > 0) els.goalProfitText.classList.add('green'); else els.goalProfitText.classList.remove('green');
+ if (stats.thisMonthSales >= sGoal && sGoal > 0) els.goalSalesText.classList.add('green'); else els.goalSalesText.classList.remove('green');
+ }
+
+ function renderMonthlyChart(){
+ const svg = els.monthlyChart;
+ const months = [];
+ const now = new Date();
+ for (let i = 5; i >= 0; i--){
+ const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+ months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+ }
+ const data = months.map(m => {
+ const rows = sales.filter(s => monthKeyFromDate(normalizedDate(s.date)) === m);
+ return {
+ key:m,
+ label:monthLabel(m),
+ revenue: rows.reduce((a,s)=>a+num(s.sold),0),
+ profit: rows.reduce((a,s)=>a+calcProfit(s),0),
+ count: countSales(rows)
+ };
+ });
+ const maxRevenue = Math.max(1, ...data.map(d => d.revenue));
+ const maxProfit = Math.max(1, ...data.map(d => Math.abs(d.profit)));
+ const maxCount = Math.max(1, ...data.map(d => d.count));
+
+ const W = 1000, H = 240, pad = 26;
+ const laneW = (W - pad*2) / data.length;
+ const revenueH = 118, profitH = 78, countH = 54;
+ let out = '';
+ out += `<rect x="0" y="0" width="${W}" height="${H}" rx="18" fill="transparent"></rect>`;
+
+ // grid lines
+ [60, 120, 180].forEach(y => {
+ out += `<line x1="${pad}" y1="${y}" x2="${W-pad}" y2="${y}" stroke="rgba(255,255,255,.06)" stroke-width="1" />`;
+ });
+
+ data.forEach((d, i) => {
+ const x = pad + i * laneW + laneW * 0.12;
+ const barW = laneW * 0.72;
+ const revBarH = revenueH * (d.revenue / maxRevenue);
+ const profitBarH = profitH * (Math.abs(d.profit) / maxProfit);
+ const countBarH = countH * (d.count / maxCount);
+
+ out += `<text x="${x+barW/2}" y="22" fill="rgba(255,255,255,.72)" font-size="12" text-anchor="middle">${esc(d.label)}</text>`;
+ out += `<rect x="${x}" y="${130-revBarH}" width="${barW}" height="${revBarH}" rx="8" fill="rgba(62,207,142,.85)"></rect>`;
+ out += `<rect x="${x}" y="${154-profitBarH}" width="${barW}" height="${profitBarH}" rx="8" fill="${d.profit >= 0 ? 'rgba(122,167,255,.86)' : 'rgba(255,95,122,.86)'}"></rect>`;
+ out += `<rect x="${x}" y="${214-countBarH}" width="${barW}" height="${countBarH}" rx="8" fill="rgba(247,201,72,.9)"></rect>`;
+ out += `<text x="${x+barW/2}" y="145" fill="rgba(255,255,255,.8)" font-size="11" text-anchor="middle">${fmtMoney(d.revenue)}</text>`;
+ out += `<text x="${x+barW/2}" y="169" fill="rgba(255,255,255,.8)" font-size="11" text-anchor="middle">${fmtSigned(d.profit)}</text>`;
+ out += `<text x="${x+barW/2}" y="229" fill="rgba(255,255,255,.8)" font-size="11" text-anchor="middle">${d.count} sale${d.count===1?'':'s'}</text>`;
+ });
+
+ svg.innerHTML = out;
+ document.getElementById('month-range').textContent = `${monthLabel(months[0])} → ${monthLabel(months[months.length-1])}`;
+ }
+
+ function groupedByItem(){
+ const map = new Map();
+ sales.forEach(s => {
+ const key = String(s.name || 'Unknown item').trim().toLowerCase();
+ const current = map.get(key) || { name: s.name || 'Unknown item', count:0, revenue:0, profit:0, avgCost:0, avgPrice:0, fees:0 };
+ current.count += 1;
+ current.revenue += num(s.sold);
+ current.profit += calcProfit(s);
+ current.fees += num(s.fees);
+ current.avgCost += num(s.cost);
+ current.avgPrice += num(s.sold);
+ current.name = current.name || s.name || 'Unknown item';
+ map.set(key, current);
+ });
+ return [...map.values()].map(v => ({
+ ...v,
+ avgCost: v.count ? v.avgCost / v.count : 0,
+ avgPrice: v.count ? v.avgPrice / v.count : 0
+ }));
+ }
+
+ function renderTopItems(){
+ const items = groupedByItem().sort((a,b) => b.count - a.count || b.profit - a.profit);
+ const top = items[0];
+ els.topItem.innerHTML = top ? `
+ <div class="list-row">
+ <div class="left">
+ <strong>${esc(top.name)}</strong>
+ <span class="muted tiny">${top.count} sale${top.count===1?'':'s'} · ${fmtMoney(top.revenue)} revenue</span>
+ </div>
+ <div class="right">
+ <div class="${top.profit >= 0 ? 'green' : 'red'} mono">${fmtSigned(top.profit)}</div>
+ <div class="tiny muted">total profit</div>
+ </div>
+ </div>
+ ` : `<div class="muted">No sales yet.</div>`;
+ els.topItemList.innerHTML = items.slice(1,6).map(item => `
+ <div class="list-row">
+ <div class="left">
+ <strong>${esc(item.name)}</strong>
+ <span class="tiny muted">${item.count} sale${item.count===1?'':'s'} · avg ${fmtMoney(item.avgPrice)}</span>
+ </div>
+ <div class="right">
+ <div class="${item.profit >= 0 ? 'green' : 'red'} mono">${fmtSigned(item.profit)}</div>
+ <div class="tiny muted">profit</div>
+ </div>
+ </div>
+ `).join('') || `<div class="muted">No repeats yet.</div>`;
+ }
+
+ function renderTopBuyers(){
+ const buyers = {};
+ sales.forEach(s => {
+ const b = String(s.buyer || '—').trim();
+ if (!b || b === '—') return;
+ if (!buyers[b]) buyers[b] = { buyer:b, spent:0, count:0 };
+ buyers[b].spent += num(s.sold);
+ const itemCount = (s.bundle && Array.isArray(s.bundle) && s.bundle.length > 1) ? s.bundle.length : 1;
+ buyers[b].count += itemCount;
+ });
+ const rows = Object.values(buyers).sort((a,b)=>b.count-a.count || b.spent-a.spent).slice(0,6);
+ els.buyersList.innerHTML = rows.length ? rows.map(row => `
+ <div class="list-row">
+ <div class="left">
+ <strong>@${esc(row.buyer.replace(/^@/,''))}</strong>
+ <span class="tiny muted">${row.count} order${row.count===1?'':'s'}</span>
+ </div>
+ <div class="right">
+ <div class="mono">${fmtMoney(row.spent)}</div>
+ <div class="tiny muted">spent</div>
+ </div>
+ </div>
+ `).join('') : `<div class="muted">No buyer data yet.</div>`;
+ }
+
+ function renderInsights(stats){
+ const monthRows = sales.filter(isThisMonth);
+ const weekdayMap = [0,0,0,0,0,0,0];
+ sales.forEach(s => {
+ const d = new Date(normalizedDate(s.date));
+ if (!isNaN(d.getTime())) {
+ const itemCount = (s.bundle && Array.isArray(s.bundle) && s.bundle.length > 1) ? s.bundle.length : 1;
+ weekdayMap[d.getDay()] += itemCount;
+ }
+ });
+ const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+ const bestDayIndex = weekdayMap.indexOf(Math.max(...weekdayMap));
+ const bestDay = dayNames[bestDayIndex];
+ const highestROI = [...sales].filter(s => num(s.cost) > 0).sort((a,b) => (calcROI(b) || -999) - (calcROI(a) || -999))[0];
+ const avgFeeRate = averageFeeRate().rate * 100;
+ const totalProfitDelta = countSales(sales) ? (sales.filter(isThisMonth).reduce((a,s)=>a+calcProfit(s),0) / Math.max(1, sales.filter(s => monthKeyFromDate(normalizedDate(s.date)) === prevMonthKey()).reduce((a,s)=>a+calcProfit(s),0) || 1)) : 0;
+ const monthSalesCount = countSales(monthRows);
+ const note = monthRows.length ? `You made ${fmtSigned(monthRows.reduce((a,s)=>a+calcProfit(s),0))} this month across ${monthSalesCount} sale${monthSalesCount===1?'':'s'}.` : 'No sales this month yet.';
+
+ const insights = [];
+ insights.push(`Your best selling day so far looks like <strong>${esc(bestDay)}</strong> with <strong>${weekdayMap[bestDayIndex]}</strong> sale${weekdayMap[bestDayIndex]===1?'':'s'}.`);
+ if (highestROI) insights.push(`Highest ROI item: <strong>${esc(highestROI.name)}</strong> at <strong>${calcROI(highestROI).toFixed(1)}%</strong>.`);
+ if (avgFeeRate) insights.push(`Your average fee rate is about <strong>${avgFeeRate.toFixed(1)}%</strong>.`);
+ insights.push(note);
+ const zeroCost = sales.filter(s => num(s.cost) === 0).length;
+ if (zeroCost) insights.push(`<strong>${zeroCost}</strong> sale${zeroCost===1?' still has':' still have'} a $0 cost. Fixing those will make profit numbers more accurate.`);
+
+ els.insights.innerHTML = insights.map(t => `<div class="insight">${t}</div>`).join('');
+ }
+
+ function prevMonthKey(){
+ const d = new Date();
+ d.setMonth(d.getMonth()-1);
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+ }
+
+ function renderDayTracker(){
+ const map = [0,0,0,0,0,0,0];
+ const profit = [0,0,0,0,0,0,0];
+ sales.forEach(s => {
+ const d = new Date(normalizedDate(s.date));
+ if (isNaN(d.getTime())) return;
+ const i = d.getDay();
+ const itemCount = (s.bundle && Array.isArray(s.bundle) && s.bundle.length > 1) ? s.bundle.length : 1;
+ map[i] += itemCount;
+ profit[i] += calcProfit(s);
+ });
+ const names = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ const maxCount = Math.max(1, ...map);
+ els.dayList.innerHTML = names.map((name, i) => `
+ <div class="list-row">
+ <div class="left">
+ <strong>${name}</strong>
+ <span class="tiny muted">${map[i]} sale${map[i]===1?'':'s'} · ${fmtSigned(profit[i])} profit</span>
+ </div>
+ <div class="right">
+ <div class="mono">${maxCount ? Math.round((map[i]/maxCount)*100) : 0}%</div>
+ <div class="tiny muted">relative</div>
+ </div>
+ </div>
+ `).join('');
+ }
+
+ function renderMissingCosts(){
+ const rows = sales.filter(s => num(s.cost) === 0).slice(0,8);
+ els.missingCosts.innerHTML = rows.length ? rows.map(s => `
+ <div class="list-row">
+ <div class="left">
+ <strong>${esc(s.name)}</strong>
+ <span class="tiny muted">${normalizedDate(s.date)} · @${esc(s.buyer)} · sold ${fmtMoney(s.sold)}</span>
+ </div>
+ <div class="right">
+ <div class="red mono">$0.00</div>
+ <div class="tiny muted">cost</div>
+ </div>
+ </div>
+ `).join('') : `<div class="muted">All sales have a cost filled in.</div>`;
+ }
+
+ function renderLog(){
+ const q = document.getElementById('search').value.trim().toLowerCase();
+ const status = document.getElementById('filter-status').value;
+ const buyer = document.getElementById('filter-buyer').value.trim().toLowerCase();
+ const from = document.getElementById('filter-from').value;
+ const to = document.getElementById('filter-to').value;
+ const sortBy = document.getElementById('sort-by').value;
+
+ let rows = sales.filter(s => {
+ const blob = `${s.name} ${s.buyer} ${s.notes}`.toLowerCase();
+ if (q && !blob.includes(q)) return false;
+ if (status && s.status !== status) return false;
+ if (buyer && !String(s.buyer||'').toLowerCase().includes(buyer)) return false;
+ if (from && normalizedDate(s.date) < from) return false;
+ if (to && normalizedDate(s.date) > to) return false;
+ return true;
+ });
+
+ rows = rows.slice().sort((a,b) => {
+ const pa = calcProfit(a), pb = calcProfit(b);
+ const ra = calcROI(a) ?? -999, rb = calcROI(b) ?? -999;
+ switch(sortBy){
+ case 'oldest': return new Date(normalizedDate(a.date)) - new Date(normalizedDate(b.date));
+ case 'profit-high': return pb - pa;
+ case 'profit-low': return pa - pb;
+ case 'roi-high': return rb - ra;
+ case 'sold-high': return num(b.sold) - num(a.sold);
+ case 'sold-low': return num(a.sold) - num(b.sold);
+ default: return new Date(normalizedDate(b.date)) - new Date(normalizedDate(a.date));
+ }
+ });
+
+ els.salesBody.innerHTML = rows.map(s => renderTableRow(s)).join('');
+ els.mobileList.innerHTML = rows.map(s => renderMobileCard(s)).join('');
+
+ if (!rows.length){
+ els.salesBody.innerHTML = `<tr><td colspan="12" class="muted" style="padding:18px;text-align:center">No sales match your filters.</td></tr>`;
+ els.mobileList.innerHTML = `<div class="muted" style="text-align:center;padding:24px 0">No sales match your filters.</div>`;
+ }
+ }
+
+ function renderTableRow(s){
+ const profit = calcProfit(s);
+ const roi = calcROI(s);
+ const zero = num(s.cost) === 0;
+ const thumb = s.image ? `<img class="thumb" src="${s.image}" alt="">` : `<div class="thumb">No pic</div>`;
+ const bundleBadge = s.bundle ? `<span class="bundle-badge"> ${s.bundle.length}</span>` : '';
+ return `
+ <tr class="${zero ? 'zero-cost' : ''}" data-id="${s.id}">
+ <td title="${esc(s.name)}">
+ <div class="cell-flex">
+ <div class="cell-stack" style="min-width:0">
+ <div class="item-name">${esc(s.name)} ${bundleBadge}</div>
+ <div class="tiny muted">${zero ? '<span class="cost-zero">Missing cost</span>' : esc(s.notes || '')}</div>
+ </div>
+ </div>
+ </td>
+ <td>${esc(normalizedDate(s.date))}</td>
+ <td>${thumb}</td>
+ <td>
+ <span class="cost-click ${zero ? 'cost-zero' : ''}" data-action="edit-cost" data-id="${s.id}">${fmtMoney(s.cost)}</span>
+ </td>
+ <td class="mono">${fmtMoney(s.sold)}</td>
+ <td class="mono red" title="Processing: ${fmtMoney(s.feeProcessing)}${num(s.feeBoosting)>0?' · Boosting: '+fmtMoney(s.feeBoosting):''}">${fmtMoney(round2(num(s.feeProcessing)+num(s.feeBoosting)))}</td>
+ <td class="mono ${profit>=0?'green':'red'}">${fmtSigned(profit)}</td>
+ <td class="mono ${profit>=0?'green':'red'}">${roi === null ? '—' : `${roi.toFixed(1)}%`}</td>
+ <td>${s.status === 'paid' ? '<span class="badge badge-paid">Paid</span>' : '<span class="badge badge-unpaid">Unpaid</span>'}</td>
+ <td title="${esc(s.buyer)}">@${esc(String(s.buyer||'').replace(/^@/,'').trim())}</td>
+ <td title="${esc(s.notes)}">${esc(s.notes || '—')}</td>
+ <td>
+ <div class="sale-actions">
+ <button class="inline-btn" data-action="edit" data-id="${s.id}">Edit</button>
+ <button class="inline-btn" data-action="dup" data-id="${s.id}">Dup</button>
+ <button class="inline-btn del-btn" data-action="del" data-id="${s.id}">Del</button>
+ </div>
+ </td>
+ </tr>
+ `;
+ }
+
+ function renderMobileCard(s){
+ const profit = calcProfit(s);
+ const roi = calcROI(s);
+ const zero = num(s.cost) === 0;
+ const bundleBadge = s.bundle ? `<span class="bundle-badge"> ${s.bundle.length} items</span>` : '';
+ const bundleDetails = s.bundle ? `
+ <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6">
+ ${s.bundle.map(i => `${esc(i.name)}: <strong>${fmtMoney(i.cost)}</strong>`).join(' · ')}
+ ${s.bundleDiscount > 0 ? ` · Discount: <strong class="red">-${fmtMoney(s.bundleDiscount)}</strong>` : ''}
+ </div>` : '';
+ return `
+ <div class="sale-card ${zero ? 'zero-cost' : ''}" data-id="${s.id}">
+ <div class="sale-head">
+ <div class="cell-flex" style="min-width:0">
+ <div class="photo-slot">${s.image ? `<img src="${s.image}" alt="">` : 'No photo'}</div>
+ <div class="cell-stack" style="min-width:0">
+ <div class="item-name">${esc(s.name)} ${bundleBadge}</div>
+ <div class="tiny muted">${esc(normalizedDate(s.date))} · ${s.status === 'paid' ? 'Paid' : 'Unpaid'}</div>
+ </div>
+ </div>
+ <div class="sale-profit ${profit>=0?'green':'red'}">${fmtSigned(profit)}</div>
+ </div>
+ ${bundleDetails}
+ <div class="sale-row">
+ <div class="chip">Cost <strong><span class="${zero ? 'cost-zero' : ''}">${fmtMoney(s.cost)}</span></strong></div>
+ <div class="chip">Sold <strong>${fmtMoney(s.sold)}</strong></div>
+ <div class="chip">Proc. fee <strong class="red">${fmtMoney(s.feeProcessing)}</strong></div>
+ ${num(s.feeBoosting) > 0 ? `<div class="chip">Boost fee <strong class="red">${fmtMoney(s.feeBoosting)}</strong></div>` : ''}
+ <div class="chip">ROI <strong>${roi === null ? '—' : `${roi.toFixed(1)}%`}</strong></div>
+ </div>
+ <div class="tiny muted">Buyer: @${esc(String(s.buyer||'').replace(/^@/,'').trim())}${s.notes ? ` · ${esc(s.notes)}` : ''}</div>
+ <div class="sale-footer">
+ <div class="tiny muted">${zero ? 'Missing cost' : 'Cost saved'} · ${s.image ? 'Photo attached' : 'No photo'}</div>
+ <div class="sale-actions">
+ <button class="inline-btn" data-action="edit" data-id="${s.id}">Edit</button>
+ <button class="inline-btn" data-action="dup" data-id="${s.id}">Duplicate</button>
+ <button class="inline-btn del-btn" data-action="del" data-id="${s.id}">Delete</button>
+ </div>
+ </div>
+ </div>
+ `;
+ }
+
+ function openSaleModal(prefill = null){
+ const isEdit = !!prefill;
+ document.getElementById('sale-name').value = prefill?.name || '';
+ document.getElementById('sale-cost').value = prefill ? prefill.cost : '';
+ document.getElementById('sale-sold').value = prefill ? prefill.sold : '';
+ document.getElementById('sale-date').value = prefill?.date || todayISO();
+ document.getElementById('sale-status').value = prefill?.status || 'paid';
+ // Split fees — backward compat: if no split fields exist use fees / 0
+ document.getElementById('sale-fee-processing').value = prefill ? (prefill.feeProcessing != null ? prefill.feeProcessing : prefill.fees || '') : '';
+ document.getElementById('sale-fee-boosting').value = prefill ? (prefill.feeBoosting != null ? prefill.feeBoosting : '') : '';
+ document.getElementById('sale-buyer').value = prefill?.buyer && prefill.buyer !== '—' ? prefill.buyer : '';
+ document.getElementById('sale-notes').value = prefill?.notes || '';
+ editingImageData = prefill?.image || '';
+ document.getElementById('sale-image').value = '';
+
+ // Bundle state
+ const bundleToggle = document.getElementById('bundle-toggle');
+ const isBundle = !!(prefill?.bundle && prefill.bundle.length > 0);
+ bundleToggle.checked = isBundle;
+ toggleBundleUI(isBundle);
+ const list = document.getElementById('bundle-items-list');
+ list.innerHTML = '';
+ bundleItemCount = 0;
+ if (isBundle && prefill.bundle) {
+ prefill.bundle.forEach(item => addBundleItem(item));
+ document.getElementById('bundle-discount').value = prefill.bundleDiscount || '';
+ } else {
+ addBundleItem(); addBundleItem();
+ document.getElementById('bundle-discount').value = '';
+ }
+ updateBundleTotalCost();
+
+ renderSaleImagePreview();
+ updateSalePreview();
+ els.saleModal.classList.add('open');
+ els.saleModal.dataset.editId = prefill?.id || '';
+ document.querySelector('#sale-modal h3').textContent = isEdit ? 'Edit sale' : 'Log a sale';
+ }
+ window._openSaleModal = openSaleModal;
+
+ function closeSaleModal(){
+ els.saleModal.classList.remove('open');
+ els.saleModal.dataset.editId = '';
+ editingImageData = '';
+ }
+
+ function renderSaleImagePreview(){
+ if (editingImageData) {
+ els.saleImagePreview.innerHTML = `
+ <div class="file-pill">
+ <div>
+ <strong>Attached image</strong><br />
+ <span class="tiny muted">This image will be saved with the sale.</span>
+ </div>
+ <img src="${editingImageData}" alt="">
+ </div>
+ `;
+ } else {
+ els.saleImagePreview.innerHTML = `<div class="tiny muted">No image attached yet.</div>`;
+ }
+ }
+
+ async function resizeImage(file, maxDim=900, quality=0.82){
+ if (!file) return '';
+ if (!file.type.startsWith('image/')) return '';
+ const dataUrl = await new Promise((resolve, reject) => {
+ const fr = new FileReader();
+ fr.onload = () => resolve(fr.result);
+ fr.onerror = reject;
+ fr.readAsDataURL(file);
+ });
+ const img = await new Promise((resolve, reject) => {
+ const i = new Image();
+ i.onload = () => resolve(i);
+ i.onerror = reject;
+ i.src = dataUrl;
+ });
+ let {width, height} = img;
+ const scale = Math.min(1, maxDim / Math.max(width, height));
+ width = Math.round(width * scale);
+ height = Math.round(height * scale);
+ const canvas = document.createElement('canvas');
+ canvas.width = width;
+ canvas.height = height;
+ const ctx = canvas.getContext('2d');
+ ctx.drawImage(img, 0, 0, width, height);
+ return canvas.toDataURL('image/jpeg', quality);
+ }
+
+ function updateSalePreview(){
+ const sold = num(document.getElementById('sale-sold').value);
+ const cost = num(document.getElementById('sale-cost').value);
+ const procRaw = document.getElementById('sale-fee-processing').value;
+ const feeProc = procRaw === '' ? round2(sold * averageFeeRate().rate) : num(procRaw);
+ const feeBoosting = num(document.getElementById('sale-fee-boosting').value);
+ const totalFees = round2(feeProc + feeBoosting);
+ const discount = num(document.getElementById('bundle-discount')?.value || 0);
+ const profit = round2(sold - cost - totalFees - discount);
+
+ document.getElementById('sale-preview-proc').textContent = fmtMoney(feeProc);
+ document.getElementById('sale-preview-boost').textContent = fmtMoney(feeBoosting);
+ els.salePreviewFee.textContent = fmtMoney(totalFees);
+ els.salePreviewProfit.textContent = fmtSigned(profit);
+ els.salePreviewProfit.className = 'mono ' + (profit >= 0 ? 'green' : 'red');
+
+ const discRow = document.getElementById('bundle-preview-row');
+ const discEl = document.getElementById('sale-preview-discount');
+ const isBundle = document.getElementById('bundle-toggle').checked;
+ if (discRow) {
+ discRow.style.display = (isBundle && discount > 0) ? '' : 'none';
+ if (discEl) discEl.textContent = '-' + fmtMoney(discount);
+ }
+ }
+
+ function buildSaleFromForm(){
+ const isBundle = document.getElementById('bundle-toggle').checked;
+ let name, cost, bundleItems, bundleDiscount;
+
+ if (isBundle) {
+ const rows = document.querySelectorAll('.bundle-item-row');
+ bundleItems = [];
+ rows.forEach(row => {
+ const nameEl = row.querySelector('.bundle-item-name');
+ const costEl = row.querySelector('.bundle-item-cost');
+ bundleItems.push({
+ name: nameEl ? nameEl.value.trim() || 'Item' : 'Item',
+ cost: costEl ? num(costEl.value) : 0
+ });
+ });
+ bundleDiscount = num(document.getElementById('bundle-discount').value);
+ const totalCost = bundleItems.reduce((sum, i) => sum + i.cost, 0);
+ const itemNames = bundleItems.map(i => i.name).filter(Boolean);
+ name = itemNames.length > 1 ? 'Bundle: ' + itemNames.join(' + ') : (itemNames[0] || 'Bundle');
+ cost = round2(totalCost);
+ } else {
+ name = document.getElementById('sale-name').value.trim();
+ cost = num(document.getElementById('sale-cost').value);
+ bundleItems = null;
+ bundleDiscount = 0;
+ }
+
+ const sold = num(document.getElementById('sale-sold').value);
+ const date = normalizedDate(document.getElementById('sale-date').value || todayISO());
+ const status = document.getElementById('sale-status').value === 'unpaid' ? 'unpaid' : 'paid';
+ const procRaw = document.getElementById('sale-fee-processing').value;
+ const feeProcessing = procRaw === '' ? round2(sold * averageFeeRate().rate) : num(procRaw);
+ const feeBoosting = num(document.getElementById('sale-fee-boosting').value);
+ const fees = round2(feeProcessing + feeBoosting);
+ const buyer = document.getElementById('sale-buyer').value.trim() || '—';
+ const notes = document.getElementById('sale-notes').value.trim();
+
+ const saleObj = {
+ name: name || 'Unknown item',
+ cost, sold, feeProcessing, feeBoosting, fees,
+ date, status, buyer, notes,
+ ship: 0,
+ image: editingImageData || '',
+ raw: {}
+ };
+ if (bundleItems) {
+ saleObj.bundle = bundleItems;
+ saleObj.bundleDiscount = bundleDiscount;
+ }
+ return saleObj;
+ }
+
+ document.getElementById('sale-image').addEventListener('change', async function(){
+ const file = this.files && this.files[0];
+ if (!file) return;
+ editingImageData = await resizeImage(file);
+ renderSaleImagePreview();
+ });
+
+ ['sale-cost','sale-sold','sale-fee-processing','sale-fee-boosting'].forEach(id => {
+ document.getElementById(id).addEventListener('input', updateSalePreview);
+ });
+
+ document.getElementById('sale-cancel').addEventListener('click', closeSaleModal);
+ document.getElementById('sale-modal').addEventListener('click', e => {
+ if (e.target === document.getElementById('sale-modal')) closeSaleModal();
+ });
+
+ // ── Bundle feature ────────────────────────────────────────────────────────
+ let bundleItemCount = 0;
+
+ function toggleBundleUI(enabled) {
+ document.getElementById('bundle-section').classList.toggle('hidden', !enabled);
+ document.getElementById('single-name-row').classList.toggle('hidden', enabled);
+ const costInput = document.getElementById('sale-cost');
+ const costLabel = document.getElementById('cost-label-note');
+ if (enabled) {
+ costInput.readOnly = true;
+ costInput.style.opacity = '.5';
+ if (costLabel) costLabel.textContent = '(auto from bundle)';
+ } else {
+ costInput.readOnly = false;
+ costInput.style.opacity = '';
+ if (costLabel) costLabel.textContent = '';
+ }
+ updateBundleTotalCost();
+ updateSalePreview();
+ }
+
+ function updateBundleTotalCost() {
+ const rows = document.querySelectorAll('.bundle-item-row');
+ let total = 0;
+ rows.forEach(row => {
+ const costEl = row.querySelector('.bundle-item-cost');
+ if (costEl) total += num(costEl.value);
+ });
+ total = round2(total);
+ const display = document.getElementById('bundle-total-cost-display');
+ if (display) display.textContent = fmtMoney(total);
+ // Auto-fill the main cost field
+ const costInput = document.getElementById('sale-cost');
+ costInput.value = total > 0 ? total : '';
+ updateSalePreview();
+ }
+
+ function addBundleItem(prefill = null) {
+ bundleItemCount++;
+ const idx = bundleItemCount;
+ const list = document.getElementById('bundle-items-list');
+ const row = document.createElement('div');
+ row.className = 'bundle-item-row';
+ row.dataset.idx = idx;
+ row.innerHTML = `
+ <div class="form-grid" style="gap:8px;flex:1">
+ <div class="form-row">
+ <label style="font-size:10px">Item ${idx} name</label>
+ <input type="text" class="bundle-item-name" placeholder="e.g. Cargo Pants" value="${esc(prefill?.name || '')}" />
+ </div>
+ <div class="form-row">
+ <label style="font-size:10px">Item ${idx} cost <span style="color:var(--red)">*</span></label>
+ <input type="number" class="bundle-item-cost" min="0" step="0.01" placeholder="e.g. 3.00" value="${prefill?.cost || ''}" />
+ </div>
+ </div>
+ <button type="button" class="bundle-remove-btn" data-idx="${idx}"></button>
+ `;
+ list.appendChild(row);
+
+ // Cost change => update total
+ row.querySelector('.bundle-item-cost').addEventListener('input', updateBundleTotalCost);
+
+ // Remove button
+ row.querySelector('.bundle-remove-btn').addEventListener('click', () => {
+ row.remove();
+ updateBundleTotalCost();
+ // Renumber labels
+ document.querySelectorAll('.bundle-item-row').forEach((r, i) => {
+ r.querySelectorAll('label').forEach(l => {
+ l.textContent = l.textContent.replace(/Item \d+/, `Item ${i + 1}`);
+ });
+ });
+ });
+
+ updateBundleTotalCost();
+ }
+
+ // Toggle event
+ document.getElementById('bundle-toggle').addEventListener('change', function() {
+ toggleBundleUI(this.checked);
+ // Ensure at least 2 items when enabling
+ if (this.checked && document.querySelectorAll('.bundle-item-row').length === 0) {
+ addBundleItem(); addBundleItem();
+ }
+ });
+
+ // Add item button
+ document.getElementById('bundle-add-item').addEventListener('click', () => {
+ addBundleItem();
+ });
+
+ // Discount change => update preview
+ document.getElementById('bundle-discount').addEventListener('input', updateSalePreview);
+
+ // Initialize: start with 2 bundle item rows (hidden initially)
+ addBundleItem(); addBundleItem();
+ // ── End bundle feature ────────────────────────────────────────────────────
+
+ document.getElementById('sale-save').addEventListener('click', () => {
+ const isBundle = document.getElementById('bundle-toggle').checked;
+ const sale = buildSaleFromForm();
+
+ // Validate name (single mode)
+ if (!isBundle && !sale.name.trim()){
+ toast('Please add an item name.');
+ return;
+ }
+
+ // Validate cost
+ const costInput = document.getElementById('sale-cost');
+ const costErr = document.getElementById('sale-cost-error');
+ if (!isBundle) {
+ if (!costInput.value || num(costInput.value) <= 0) {
+ costInput.style.borderColor = 'var(--red)';
+ costErr.style.display = 'block';
+ costInput.focus();
+ return;
+ }
+ } else {
+ // In bundle mode, validate that at least one item has a cost
+ const totalCost = (sale.bundle || []).reduce((s, i) => s + i.cost, 0);
+ if (totalCost <= 0) {
+ toast('Please enter cost for at least one bundle item.');
+ return;
+ }
+ }
+
+ costInput.style.borderColor = '';
+ costErr.style.display = 'none';
+ const editId = els.saleModal.dataset.editId;
+ if (editId) {
+ updateSale(editId, sale);
+ toast('Sale updated.');
+ } else {
+ addSale(Object.assign(sale, { id: uid() }), true);
+ toast(isBundle ? 'Bundle sale saved.' : 'Sale saved.');
+ }
+ closeSaleModal();
+ });
+
+ document.getElementById('sale-cost').addEventListener('input', () => {
+ const costInput = document.getElementById('sale-cost');
+ const costErr = document.getElementById('sale-cost-error');
+ if (costInput.value && num(costInput.value) > 0) {
+ costInput.style.borderColor = '';
+ costErr.style.display = 'none';
+ }
+ });
+
+ document.getElementById('add-sale-btn').addEventListener('click', () => openSaleModal());
+ document.getElementById('add-sale-btn-2').addEventListener('click', () => openSaleModal());
+
+ function renderImportPreview(rows){
+ const summary = pendingImportSummary || { total:0, duplicates:0, missingCosts:0, newRows:0 };
+ els.importSummary.innerHTML = `
+ <span class="kpi"><strong>${summary.total}</strong> rows found</span>
+ <span class="kpi"><strong>${summary.newRows}</strong> new rows</span>
+ <span class="kpi"><strong>${summary.duplicates}</strong> duplicates</span>
+ <span class="kpi"><strong>${summary.missingCosts}</strong> missing costs</span>
+ `;
+ els.importCountBadge.textContent = `${summary.total} rows`;
+ els.importPreviewBody.innerHTML = rows.slice(0,10).map(r => `
+ <tr>
+ <td title="${esc(r.name)}">${esc(r.name)}</td>
+ <td>${esc(r.date || '—')}</td>
+ <td class="mono">${fmtMoney(r.sold)}</td>
+ <td class="mono red">${fmtMoney(r.fees)}</td>
+ <td>@${esc(String(r.buyer || '—').replace(/^@/,'').trim())}</td>
+ <td class="mono ${num(r.cost) === 0 ? 'red' : 'green'}">${fmtMoney(r.cost)}</td>
+ <td>${r.status === 'paid' ? '<span class="badge badge-paid">Paid</span>' : '<span class="badge badge-unpaid">Unpaid</span>'}</td>
+ <td>${r.isDuplicate ? '<span class="badge badge-warning">Dup</span>' : '<span class="badge badge-info">New</span>'}</td>
+ </tr>
+ `).join('') || `<tr><td colspan="8" class="muted" style="text-align:center;padding:16px">No valid rows</td></tr>`;
+ }
+
+ function openImportModal(rows, info){
+ pendingImport = rows;
+ pendingImportSummary = info;
+ els.importHelp.textContent = info.note || 'Depop export mapped successfully.';
+ renderImportPreview(rows);
+ els.importModal.classList.add('open');
+ }
+
+ function closeImportModal(){
+ els.importModal.classList.remove('open');
+ pendingImport = [];
+ pendingImportSummary = null;
+ }
+
+ document.getElementById('import-cancel').addEventListener('click', closeImportModal);
+ document.getElementById('import-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeImportModal(); });
+
+ 
+ function cleanImportedSale(s){
+ // When re-importing from our own Export CSV, feeProcessing and feeBoosting
+ // are stored in separate columns and parsed in parseDepopCSV.
+ // For Depop native exports, only a combined fees value exists — put it all
+ // into feeProcessing so round-tripping stays accurate.
+ const hasProcessingFee = num(s.feeProcessing) > 0;
+ const hasBoostingFee = num(s.feeBoosting) > 0;
+ const feeProcessing = hasProcessingFee ? num(s.feeProcessing) : num(s.fees);
+ const feeBoosting = hasBoostingFee ? num(s.feeBoosting) : 0;
+ const totalFees = round2(feeProcessing + feeBoosting);
+
+ // Extract payout dates from the raw CSV data
+ const rawData = s.raw || {};
+ const payoutArrivalRaw = s.payoutArrival || rawData['Payout Arrival Date'] || rawData['payout arrival date'] || '';
+ const payoutEstRaw = s.payoutEst || rawData['Estimated Payout Date'] || rawData['estimated payout date'] || '';
+ const payoutArrival = normalizedDate(payoutArrivalRaw) || '';
+ const payoutEst = normalizedDate(payoutEstRaw) || '';
+
+ // Preserve bundle data if re-importing from our export
+ const bundle = s.bundle || null;
+
+ return {
+ id: s.id || uid(),
+ name: s.name || 'Unknown item',
+ date: normalizedDate(s.date) || todayISO(),
+ cost: num(s.cost),
+ sold: num(s.sold),
+ feeProcessing,
+ feeBoosting,
+ fees: totalFees,
+ ship: num(s.ship),
+ bundleDiscount: num(s.bundleDiscount),
+ bundle,
+ status: s.status === 'unpaid' ? 'unpaid' : 'paid',
+ buyer: s.buyer || '—',
+ notes: s.notes || '',
+ image: s.image || '',
+ payoutArrival,
+ payoutEst,
+ raw: s.raw || {}
+ };
+ }
+
+ // ── Cost-entry flow for CSV imports ──────────────────────────────────────
+ let costQueue = []; // items waiting for cost entry
+ let costQueueIndex = 0;
+ let costImportMode = 'merge';
+
+ const costModal = document.getElementById('cost-modal');
+ const costInput = document.getElementById('cost-modal-input');
+ const costErr = document.getElementById('cost-modal-error');
+ const costProgress = document.getElementById('cost-modal-progress');
+ const costName = document.getElementById('cost-modal-name');
+ const costDetail = document.getElementById('cost-modal-detail');
+
+ function openCostModal(items, mode) {
+ // Only queue items that need cost entry; skip items with cost > 0 (tracker re-import)
+ const allItems = items.map(s => Object.assign({}, s));
+ costQueue = allItems.filter(s => !(s.cost > 0));
+ costQueueIndex = 0;
+ costImportMode = mode;
+ // If every item already has a cost, skip the modal entirely
+ if (!costQueue.length) {
+ finishCostImportDirect(allItems, mode);
+ return;
+ }
+ showCostStep();
+ costModal.classList.add('open');
+ }
+
+ function finishCostImportDirect(items, mode) {
+ const cleaned = items.map(cleanImportedSale);
+ if (mode === 'replace') {
+ sales = cleaned;
+ persistSales(sales);
+ renderAll();
+ closeImportModal();
+ toast('Imported ' + sales.length + ' sale' + (sales.length===1?'':'s') + '.');
+ return;
+ }
+ const seen = new Set(sales.map(fingerprint));
+ const additions = [];
+ let skipped = 0;
+ for (const sale of cleaned) {
+ const fp = fingerprint(sale);
+ if (seen.has(fp)) { skipped++; continue; }
+ seen.add(fp);
+ additions.push(sale);
+ }
+ if (!additions.length) {
+ closeImportModal();
+ toast('No new sales found.');
+ return;
+ }
+ sales = additions.concat(sales);
+ persistSales(sales);
+ renderAll();
+ closeImportModal();
+ toast('Added ' + additions.length + ' sale' + (additions.length===1?'':'s') + (skipped ? ', skipped ' + skipped : '') + '.');
+ }
+
+ function showCostStep() {
+ const item = costQueue[costQueueIndex];
+ costProgress.textContent = `Item ${costQueueIndex + 1} of ${costQueue.length}`;
+ costName.textContent = item.name;
+ costDetail.textContent = `Sold for ${fmtMoney(item.sold)} · ${item.date} · @${String(item.buyer||'').replace(/^@/,'')}`;
+ costInput.value = '';
+ costErr.style.display = 'none';
+ costInput.style.borderColor = '';
+ costInput.focus();
+ }
+
+ function advanceCostQueue(cost) {
+ costQueue[costQueueIndex].cost = round2(cost);
+ costQueueIndex++;
+ if (costQueueIndex < costQueue.length) {
+ showCostStep();
+ } else {
+ finishCostImport();
+ }
+ }
+
+ function finishCostImport() {
+ costModal.classList.remove('open');
+ const cleaned = costQueue.map(cleanImportedSale);
+ if (costImportMode === 'replace') {
+ sales = cleaned;
+ persistSales(sales);
+ renderAll();
+ closeImportModal();
+ toast(`Imported ${sales.length} sale${sales.length===1?'':'s'}.`);
+ return;
+ }
+ const seen = new Set(sales.map(fingerprint));
+ const additions = [];
+ let skipped = 0;
+ for (const sale of cleaned) {
+ const fp = fingerprint(sale);
+ if (seen.has(fp)) { skipped++; continue; }
+ seen.add(fp);
+ additions.push(sale);
+ }
+ if (!additions.length) {
+ closeImportModal();
+ toast('No new sales found.');
+ return;
+ }
+ sales = additions.concat(sales);
+ persistSales(sales);
+ renderAll();
+ closeImportModal();
+ toast(`Added ${additions.length} sale${additions.length===1?'':'s'}${skipped ? `, skipped ${skipped}` : ''}.`);
+ }
+
+ document.getElementById('cost-modal-next').addEventListener('click', () => {
+ const val = costInput.value;
+ if (!val || num(val) <= 0) {
+ costInput.style.borderColor = 'var(--red)';
+ costErr.style.display = 'block';
+ costInput.focus();
+ return;
+ }
+ advanceCostQueue(num(val));
+ });
+
+ document.getElementById('cost-modal-skip').addEventListener('click', () => {
+ advanceCostQueue(0);
+ });
+
+ costInput.addEventListener('keydown', e => {
+ if (e.key === 'Enter') document.getElementById('cost-modal-next').click();
+ });
+
+ costInput.addEventListener('input', () => {
+ if (costInput.value && num(costInput.value) > 0) {
+ costInput.style.borderColor = '';
+ costErr.style.display = 'none';
+ }
+ });
+ // ── end cost-entry flow ───────────────────────────────────────────────────
+
+ document.getElementById('import-confirm').addEventListener('click', () => {
+ const mode = document.querySelector('input[name="import-mode"]:checked').value;
+ if (!pendingImport.length){
+ toast('Nothing to import.');
+ return;
+ }
+ const cleaned = pendingImport.map(cleanImportedSale);
+ // Close import preview and open cost-entry flow
+ els.importModal.classList.remove('open');
+ openCostModal(cleaned, mode);
+ });
+
+document.getElementById('csv-input').addEventListener('change', async function(){
+ const file = this.files && this.files[0];
+ this.value = '';
+ if (!file) return;
+ const text = await file.text();
+ const parsed = parseDepopCSV(text);
+ if (!parsed.rows.length){
+ toast('No valid sales found in that CSV.');
+ return;
+ }
+ openImportModal(parsed.rows, parsed.info);
+ });
+
+ document.addEventListener('click', async function(e){
+ const actionEl = e.target.closest('[data-action]');
+ if (actionEl){
+ const action = actionEl.dataset.action;
+ const id = actionEl.dataset.id;
+ if (action === 'del') deleteSaleById(id);
+ if (action === 'dup') duplicateSaleById(id);
+ if (action === 'edit') {
+ const row = sales.find(s => s.id === id);
+ if (row) openSaleModal(row);
+ }
+ if (action === 'edit-cost') {
+ const row = sales.find(s => s.id === id);
+ if (!row) return;
+ const newCost = prompt('Enter item cost', row.cost > 0 ? row.cost.toFixed(2) : '');
+ if (newCost === null) return;
+ const val = num(newCost);
+ if (isNaN(val) || val < 0) return;
+ updateSale(id, { cost: round2(val) });
+ toast('Cost saved.');
+ }
+ }
+ });
+
+ function parseDepopCSV(text){
+ const rows = parseCSV(text);
+ if (rows.length < 2) return { rows:[], info:{ total:0, duplicates:0, missingCosts:0, newRows:0, note:'No valid CSV rows found.' } };
+
+ const rawHeaders = rows[0];
+ const header = rawHeaders.map(h => normalizeHeader(h));
+
+ // Find column index — exact match first, then partial
+ const findExact = (needle) => {
+ const n = normalizeHeader(needle);
+ for (let i = 0; i < header.length; i++){
+ if (header[i] === n) return i;
+ }
+ return -1;
+ };
+ const find = (...needles) => {
+ // Try exact first
+ for (const needle of needles){
+ const idx = findExact(needle);
+ if (idx >= 0) return idx;
+ }
+ // Fall back to partial
+ const tokens = needles.map(normalizeHeader);
+ for (let i = 0; i < header.length; i++){
+ for (const n of tokens){
+ if (header[i].includes(n)) return i;
+ }
+ }
+ return -1;
+ };
+
+ // Map all known Depop export columns — use exact names from Depop's export
+ const idx = {
+ date: findExact('date of sale') >= 0 ? findExact('date of sale') : find('sale date', 'sold date'),
+ desc: findExact('description') >= 0 ? findExact('description') : find('item name', 'item name', 'title'),
+ price: findExact('item price') >= 0 ? findExact('item price') : find('sale price', 'sold for'),
+ depopFee: findExact('depop fee'),
+ depopPayFee: findExact('depop payments fee'),
+ marketplaceFee: findExact('buyer marketplace fee'),
+ boostingFee: findExact('boosting fee'),
+ buyer: findExact('buyer') >= 0 ? findExact('buyer') : find('buyer username'),
+ payoutArrival: findExact('payout arrival date'),
+ payoutEst: findExact('estimated payout date'),
+ size: findExact('size'),
+ brand: findExact('brand'),
+ category: findExact('category'),
+ // Tracker-native re-import columns (from our own Export CSV)
+ trackerId: findExact('tracker_id'),
+ cost: findExact('cost'),
+ ship: findExact('shipping cost'),
+ bundleDiscount: findExact('bundle discount'),
+ status: findExact('status'),
+ notes: findExact('notes'),
+ bundleJson: findExact('bundle_json'),
+ imageBase64: findExact('image_base64'),
+ };
+
+ // Extract a clean item name from the multi-line Depop description field
+ function extractItemName(desc){
+ const lines = String(desc || '').split(/\r?\n/).map(l => l.trim()).filter(l => l && !/^[•\-#]/.test(l));
+ // Skip lines that look like a call-to-action ("DM for...", etc.)
+ const skip = /^(dm\s|message\s|check\s)/i;
+ for (const line of lines){
+ if (!skip.test(line) && line.length > 3) return line.slice(0, 120);
+ }
+ return lines[0] ? lines[0].slice(0, 120) : '';
+ }
+
+ const out = [];
+ for (let i = 1; i < rows.length; i++){
+ const cols = rows[i];
+ if (!cols || cols.every(c => !String(c).trim())) continue;
+
+ const sold = num(getCol(cols, idx.price));
+
+ // ── Fee columns ──────────────────────────────────────────────────────
+ // Tracker re-import: 'depop fee' = processing fee, 'boosting fee' = boosting fee
+ const feeProcessing = round2(
+ num(getCol(cols, idx.depopFee)) +
+ num(getCol(cols, idx.depopPayFee)) +
+ num(getCol(cols, idx.marketplaceFee))
+ );
+ const feeBoosting = round2(num(getCol(cols, idx.boostingFee)));
+ const fees = round2(feeProcessing + feeBoosting);
+
+ // Date: use "Date of sale", fall back to payout date
+ const rawDate = getCol(cols, idx.date) || getCol(cols, idx.payoutArrival) || getCol(cols, idx.payoutEst) || '';
+ const date = normalizedDate(rawDate) || todayISO();
+
+ // Item name from description (or tracker 'item name' column)
+ const desc = getCol(cols, idx.desc) || '';
+ const name = extractItemName(desc) || 'Unknown item';
+
+ // Buyer
+ const buyer = getCol(cols, idx.buyer) || '—';
+
+ // ── Status ────────────────────────────────────────────────────────────
+ // Prefer explicit 'status' column (from our export); fall back to payout heuristic
+ const statusCol = getCol(cols, idx.status).trim().toLowerCase();
+ const payoutArrivalVal = getCol(cols, idx.payoutArrival).trim();
+ let status;
+ if (statusCol === 'paid' || statusCol === 'unpaid') {
+ status = statusCol;
+ } else {
+ status = (payoutArrivalVal && payoutArrivalVal !== 'N/A' && payoutArrivalVal !== '-') ? 'paid' : 'unpaid';
+ }
+
+ // ── Notes ─────────────────────────────────────────────────────────────
+ // Prefer explicit 'notes' column; fall back to building from size/brand/category
+ let notes = getCol(cols, idx.notes);
+ if (!notes) {
+ const size = getCol(cols, idx.size);
+ const brand = getCol(cols, idx.brand);
+ const category = getCol(cols, idx.category);
+ const noteParts = [];
+ if (size && size !== 'N/A') noteParts.push(`Size: ${size}`);
+ if (brand && brand !== 'N/A' && brand !== 'Other') noteParts.push(`Brand: ${brand}`);
+ if (category && category !== 'N/A') noteParts.push(category);
+ notes = noteParts.join(' · ');
+ }
+
+ // ── Tracker-native fields ─────────────────────────────────────────────
+ const cost = idx.cost >= 0 ? num(getCol(cols, idx.cost)) : 0;
+ const ship = idx.ship >= 0 ? num(getCol(cols, idx.ship)) : 0;
+ const bundleDiscount = idx.bundleDiscount >= 0 ? num(getCol(cols, idx.bundleDiscount)) : 0;
+
+ // Bundle items (re-import from bundle_json column)
+ let bundle = null;
+ const bundleJsonStr = getCol(cols, idx.bundleJson).trim();
+ if (bundleJsonStr) {
+ try { bundle = JSON.parse(bundleJsonStr); } catch(e) { bundle = null; }
+ }
+
+ // Image (base64 data url — may be large; tolerate empty)
+ const image = getCol(cols, idx.imageBase64) || '';
+
+ // Re-use stored id if this is a tracker re-import (avoids unnecessary dups)
+ const storedId = getCol(cols, idx.trackerId).trim();
+
+ if (!name && !sold) continue;
+
+ // Get raw object with all fields
+ const rawObj = Object.fromEntries(rawHeaders.map((h, j) => [h, cols[j] || '']));
+ const payoutArrivalVal2 = getCol(cols, idx.payoutArrival).trim();
+ const payoutEstVal2 = getCol(cols, idx.payoutEst).trim();
+ const sale = {
+ id: storedId || uid(),
+ name,
+ date,
+ cost,
+ sold,
+ feeProcessing,
+ feeBoosting,
+ fees,
+ ship,
+ bundleDiscount,
+ bundle,
+ status,
+ buyer,
+ notes,
+ image,
+ payoutArrival: normalizedDate(payoutArrivalVal2) || '',
+ payoutEst: normalizedDate(payoutEstVal2) || '',
+ raw: rawObj
+ };
+ out.push(sale);
+ }
+
+ const current = new Set(sales.map(fingerprint));
+ let duplicates = 0;
+ let missingCosts = 0;
+ const previewRows = out.map(r => {
+ const isDuplicate = current.has(fingerprint(r));
+ if (isDuplicate) duplicates += 1;
+ if (!num(r.cost)) missingCosts += 1;
+ return Object.assign({}, r, { isDuplicate });
+ });
+
+ return {
+ rows: previewRows,
+ info: {
+ total: previewRows.length,
+ duplicates,
+ missingCosts,
+ newRows: previewRows.length - duplicates,
+ note: 'Columns were mapped from the Depop export. Merge mode skips exact duplicates.'
+ }
+ };
+ }
+
+ // ── Export CSV ────────────────────────────────────────────────────────────
+ // Column names match what parseDepopCSV expects so a re-import on a blank
+ // tracker restores everything: all fields, costs, split fees, bundle data,
+ // notes, payout dates, status, buyer, image (base64).
+ function exportCSV(){
+ if (!sales.length){
+ toast('No sales to export.');
+ return;
+ }
+
+ function csvCell(v){
+ const s = String(v ?? '');
+ // Wrap in quotes if contains comma, quote, or newline
+ if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')){
+ return '"' + s.replace(/"/g, '""') + '"';
+ }
+ return s;
+ }
+
+ // Headers — use names the importer already understands where possible,
+ // plus tracker-native fields for full round-trip fidelity.
+ const headers = [
+ 'tracker_id', // internal id — ignored on Depop import, used on re-import
+ 'item name', // maps to → idx.desc / 'item name'
+ 'date of sale', // maps to → idx.date
+ 'item price', // maps to → idx.price (sold for)
+ 'cost', // tracker-native: item cost paid
+ 'depop fee', // maps to → idx.depopFee (processing fee)
+ 'boosting fee', // maps to → idx.boostingFee
+ 'shipping cost', // tracker-native: seller-paid shipping
+ 'bundle discount', // tracker-native
+ 'profit', // computed — informational
+ 'roi_pct', // computed — informational
+ 'status', // paid / unpaid
+ 'buyer', // maps to → idx.buyer
+ 'notes',
+ 'payout arrival date', // maps to → idx.payoutArrival
+ 'estimated payout date', // maps to → idx.payoutEst
+ 'bundle_json', // full bundle items array serialised as JSON
+ 'image_base64' // photo data — restored on re-import
+ ];
+
+ const rows = [headers.map(csvCell).join(',')];
+
+ for (const s of sales){
+ const profit = calcProfit(s);
+ const roi = calcROI(s);
+ const row = [
+ s.id || '',
+ s.name || '',
+ normalizedDate(s.date) || '',
+ num(s.sold).toFixed(2),
+ num(s.cost).toFixed(2),
+ num(s.feeProcessing).toFixed(2),
+ num(s.feeBoosting).toFixed(2),
+ num(s.ship).toFixed(2),
+ num(s.bundleDiscount).toFixed(2),
+ profit.toFixed(2),
+ roi !== null ? roi.toFixed(1) : '',
+ s.status || 'paid',
+ s.buyer || '',
+ s.notes || '',
+ s.payoutArrival || '',
+ s.payoutEst || '',
+ s.bundle ? JSON.stringify(s.bundle) : '',
+ s.image || ''
+ ];
+ rows.push(row.map(csvCell).join(','));
+ }
+
+ const csvText = rows.join('\r\n');
+ const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ const today = new Date().toISOString().slice(0,10);
+ a.href = url;
+ a.download = `depop-tracker-export-${today}.csv`;
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ setTimeout(() => URL.revokeObjectURL(url), 5000);
+ toast(`Exported ${sales.length} sale${sales.length===1?'':'s'}.`);
+ }
+
+ document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
+ // ── end Export CSV ────────────────────────────────────────────────────────
+
+ function normalizeHeader(s){
+ return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+ }
+
+ function getCol(cols, idx){
+ return idx >= 0 ? String(cols[idx] || '').trim() : '';
+ }
+
+ function inferName(desc, cols){
+ const clean = String(desc || '').trim();
+ if (clean) {
+ const lines = clean.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+ for (const line of lines) {
+ if (!/^#|^•/.test(line)) return line.slice(0, 120);
+ }
+ if (lines[0]) return lines[0].slice(0, 120);
+ }
+ const fallbackCols = cols.map(c => String(c || '').trim()).filter(Boolean);
+ return fallbackCols[0] ? fallbackCols[0].slice(0, 120) : 'Unknown item';
+ }
+
+ function parseCSV(text){
+ const rows = [];
+ let row = [];
+ let cell = '';
+ let inQuotes = false;
+ for (let i=0; i<text.length; i++){
+ const ch = text[i];
+ const next = text[i+1];
+ if (ch === '"' && inQuotes && next === '"'){
+ cell += '"';
+ i++;
+ continue;
+ }
+ if (ch === '"'){
+ inQuotes = !inQuotes;
+ continue;
+ }
+ if (ch === ',' && !inQuotes){
+ row.push(cell);
+ cell = '';
+ continue;
+ }
+ if ((ch === '\n' || ch === '\r') && !inQuotes){
+ if (ch === '\r' && next === '\n') i++;
+ row.push(cell);
+ if (row.some(v => String(v).trim() !== '')) rows.push(row);
+ row = [];
+ cell = '';
+ continue;
+ }
+ cell += ch;
+ }
+ row.push(cell);
+ if (row.some(v => String(v).trim() !== '')) rows.push(row);
+ return rows;
+ }
+
+ function editCostInline(id){
+ const row = sales.find(s => s.id === id);
+ if (!row) return;
+ const value = prompt('Enter cost', row.cost > 0 ? row.cost.toFixed(2) : '');
+ if (value === null) return;
+ const n = num(value);
+ if (n < 0 || isNaN(n)) return;
+ updateSale(id, { cost: round2(n) });
+ toast('Cost saved.');
+ }
+
+ document.addEventListener('keydown', function(e){
+ if (e.key === 'Escape'){
+ if (els.saleModal.classList.contains('open')) closeSaleModal();
+ if (els.importModal.classList.contains('open')) closeImportModal();
+ }
+ });
+
+ document.getElementById('search').addEventListener('input', renderLog);
+ document.getElementById('filter-status').addEventListener('change', renderLog);
+ document.getElementById('filter-buyer').addEventListener('input', renderLog);
+ document.getElementById('filter-from').addEventListener('change', renderLog);
+ document.getElementById('filter-to').addEventListener('change', renderLog);
+ document.getElementById('sort-by').addEventListener('change', renderLog);
+
+ els.goalProfit.addEventListener('input', () => { goalState.profit = num(els.goalProfit.value); saveGoals(); renderAll(); });
+ els.goalSales.addEventListener('input', () => { goalState.sales = num(els.goalSales.value); saveGoals(); renderAll(); });
+
+ const calcFeeSource = document.getElementById('calc-fee-source');
+ const calcCost = document.getElementById('calc-cost');
+ const calcProfitInput = document.getElementById('calc-profit');
+ const calcShip = document.getElementById('calc-ship');
+ const calcPrice = document.getElementById('calc-price');
+ const calcBoostToggle = document.getElementById('calc-boost-toggle');
+ const suggestedPrice = document.getElementById('suggested-price');
+ const expectedProfit = document.getElementById('expected-profit');
+ const usedFeeRate = document.getElementById('used-fee-rate');
+ const manualProfit = document.getElementById('manual-profit');
+ const breakEven = document.getElementById('break-even');
+ const manualROI = document.getElementById('manual-roi');
+
+ function renderCalculator(){
+ const includeBoosting = !calcBoostToggle || calcBoostToggle.checked;
+ const rateInfo = averageFeeRate(includeBoosting);
+ const rate = rateInfo.rate;
+ calcFeeSource.innerHTML = rateInfo.source;
+ usedFeeRate.textContent = (rate * 100).toFixed(1) + '%';
+
+ const cost = num(calcCost.value);
+ const desired = num(calcProfitInput.value);
+ const ship = num(calcShip.value);
+ const price = num(calcPrice.value);
+
+ const hasInputs = calcCost.value || calcProfitInput.value || calcPrice.value;
+ if (!hasInputs) {
+ suggestedPrice.textContent = '—';
+ expectedProfit.textContent = '—';
+ manualProfit.textContent = '—';
+ breakEven.textContent = '—';
+ manualROI.textContent = '—';
+ suggestedPrice.className = 'big';
+ expectedProfit.className = 'big';
+ manualProfit.className = 'big';
+ return;
+ }
+
+ const suggested = (cost + desired + ship) / (1 - rate || 1);
+ const suggestedFees = suggested * rate;
+ const expected = suggested - cost - suggestedFees - ship;
+
+ suggestedPrice.textContent = cost || desired ? fmtMoney(suggested) : '—';
+ expectedProfit.textContent = cost || desired ? fmtSigned(expected) : '—';
+
+ const manualFees = price * rate;
+ const manualNet = price - cost - manualFees - ship;
+ manualProfit.textContent = price ? fmtSigned(manualNet) : '—';
+ manualProfit.className = 'big ' + (manualNet >= 0 ? 'green' : 'red');
+
+ const breakeven = (cost + ship) / (1 - rate || 1);
+ breakEven.textContent = cost ? fmtMoney(breakeven) : '—';
+ manualROI.textContent = cost ? (manualNet / Math.max(0.01, cost) * 100).toFixed(1) + '%' : '—';
+
+ if (suggestedPrice.textContent !== '—') {
+ suggestedPrice.className = 'big green';
+ expectedProfit.className = 'big ' + (expected >= 0 ? 'green' : 'red');
+ }
+ }
+
+ [calcCost, calcProfitInput, calcShip, calcPrice].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') renderCalculator(); }));
+ if (calcBoostToggle) {
+ calcBoostToggle.addEventListener('change', renderCalculator);
+ }
+ document.getElementById('calc-btn').addEventListener('click', renderCalculator);
+
+
+ // ── Payout Calendar ──────────────────────────────────────────────────────
+ function getPayoutDate(s) {
+ // Use actual payout arrival date; fallback to estimated payout date
+ if (s.payoutArrival && s.payoutArrival.length >= 8) return s.payoutArrival;
+ if (s.payoutEst && s.payoutEst.length >= 8) return s.payoutEst;
+ // Also check raw data directly as backup
+ if (s.raw) {
+ const keys = Object.keys(s.raw);
+ for (const k of keys) {
+ if (/payout.?arrival/i.test(k)) {
+ const v = normalizedDate(s.raw[k]);
+ if (v && v.length >= 8) return v;
+ }
+ }
+ for (const k of keys) {
+ if (/estimated.?payout/i.test(k)) {
+ const v = normalizedDate(s.raw[k]);
+ if (v && v.length >= 8) return v;
+ }
+ }
+ }
+ return '';
+ }
+
+ function calcPayoutAmount(s) {
+ // Payout = sale price - all fees - item cost - shipping paid by seller
+ return round2(num(s.sold) - num(s.feeProcessing) - num(s.feeBoosting) - num(s.cost) - num(s.ship) - num(s.bundleDiscount));
+ }
+
+ function renderPayoutCalendar() {
+ const todayStr = todayISO();
+ const now = new Date();
+ const in48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
+ // Filter: paid or completed, has payout date, date >= today
+ const eligible = sales.filter(s => {
+ if (s.status !== 'paid') return false;
+ const pd = getPayoutDate(s);
+ if (!pd) return false;
+ return pd >= todayStr;
+ });
+
+ // Group by payout date
+ const groups = new Map();
+ eligible.forEach(s => {
+ const pd = getPayoutDate(s);
+ if (!groups.has(pd)) groups.set(pd, []);
+ groups.get(pd).push(s);
+ });
+
+ // Sort dates ascending
+ const sortedDates = [...groups.keys()].sort();
+
+ // Summary stats
+ const totalIncoming = eligible.reduce((a, s) => a + Math.max(0, calcPayoutAmount(s)), 0);
+ const nextDate = sortedDates[0] || null;
+ const nextAmount = nextDate ? groups.get(nextDate).reduce((a, s) => a + Math.max(0, calcPayoutAmount(s)), 0) : 0;
+ const soonAmount = eligible.filter(s => {
+ const pd = getPayoutDate(s);
+ const dt = new Date(pd);
+ return dt <= in48h;
+ }).reduce((a, s) => a + Math.max(0, calcPayoutAmount(s)), 0);
+
+ // Update summary strip
+ const totalEl = document.getElementById('payout-total-incoming');
+ const nextAmtEl = document.getElementById('payout-next-amount');
+ const nextDateEl = document.getElementById('payout-next-date');
+ const datesCountEl = document.getElementById('payout-dates-count');
+ const totalBadge = document.getElementById('payout-total-badge');
+ const soonBadge = document.getElementById('payout-soon-badge');
+
+ if (totalEl) totalEl.textContent = fmtMoney(totalIncoming);
+ if (totalBadge) totalBadge.textContent = fmtMoney(totalIncoming) + ' incoming';
+ if (datesCountEl) datesCountEl.textContent = sortedDates.length;
+
+ if (nextDate) {
+ const d = new Date(nextDate + 'T00:00:00');
+ const label = d.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+ if (nextAmtEl) { nextAmtEl.textContent = fmtMoney(nextAmount); nextAmtEl.className = 'payout-summary-val green'; }
+ if (nextDateEl) nextDateEl.textContent = label;
+ } else {
+ if (nextAmtEl) { nextAmtEl.textContent = '—'; nextAmtEl.className = 'payout-summary-val'; }
+ if (nextDateEl) nextDateEl.textContent = 'No upcoming payouts';
+ }
+
+ // Soon badge (within 48h)
+ if (soonBadge) {
+ if (soonAmount > 0) {
+ soonBadge.textContent = fmtMoney(soonAmount) + ' arriving soon';
+ soonBadge.classList.remove('hidden');
+ } else {
+ soonBadge.classList.add('hidden');
+ }
+ }
+
+ // ── Desktop detailed list ──
+ const desktopList = document.getElementById('payout-desktop-list');
+ const mobileList = document.getElementById('payout-mobile-list');
+ if (!desktopList || !mobileList) return;
+
+ if (!sortedDates.length) {
+ const emptyHTML = `<div class="payout-empty"><div class="payout-empty-icon">📅</div>No upcoming payouts yet.<br><span class="tiny muted">Import a Depop CSV with Payout Arrival Date or Estimated Payout Date columns to see payouts here.</span></div>`;
+ desktopList.innerHTML = emptyHTML;
+ mobileList.innerHTML = emptyHTML;
+ return;
+ }
+
+ // Desktop
+ desktopList.innerHTML = sortedDates.map(dateStr => {
+ const items = groups.get(dateStr);
+ const dayTotal = items.reduce((a, s) => a + Math.max(0, calcPayoutAmount(s)), 0);
+ const dt = new Date(dateStr + 'T00:00:00');
+ const dayLabel = dt.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+ const isSoon = dt <= in48h;
+ const soonHtml = isSoon ? `<span class="payout-soon-badge" style="font-size:10px;padding:2px 7px">Soon</span>` : '';
+ const groupId = 'pg-' + dateStr.replace(/-/g, '');
+
+ const itemsHtml = items.map(s => {
+ const amt = Math.max(0, calcPayoutAmount(s));
+ const buyer = String(s.buyer || '').replace(/^@/, '').trim();
+ return `
+ <div class="payout-item-row">
+ <div class="payout-item-name" title="${esc(s.name)}">${esc(s.name)}</div>
+ <div class="payout-item-meta">@${esc(buyer)}</div>
+ <div class="payout-item-amount">${fmtMoney(amt)}</div>
+ </div>`;
+ }).join('');
+
+ return `
+ <div class="payout-day-group">
+ <div class="payout-day-header" onclick="window._togglePayoutGroup('${groupId}')">
+ <div class="payout-day-label">${esc(dayLabel)}</div>
+ <div class="payout-day-right">
+ ${soonHtml}
+ <span class="payout-day-count">${items.length} sale${items.length===1?'':'s'}</span>
+ <span class="payout-day-amount">${fmtMoney(dayTotal)}</span>
+ <button class="payout-toggle-btn open" id="btn-${groupId}">▼</button>
+ </div>
+ </div>
+ <div class="payout-items-list" id="${groupId}">${itemsHtml}</div>
+ </div>`;
+ }).join('');
+
+ // Mobile compact
+ mobileList.innerHTML = `<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden">` +
+ sortedDates.map(dateStr => {
+ const items = groups.get(dateStr);
+ const dayTotal = items.reduce((a, s) => a + Math.max(0, calcPayoutAmount(s)), 0);
+ const dt = new Date(dateStr + 'T00:00:00');
+ const dayLabel = dt.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+ const isSoon = dt <= in48h;
+ return `
+ <div class="payout-mobile-row">
+ <div class="payout-mobile-left">
+ <div class="payout-mobile-date">${esc(dayLabel)}</div>
+ <div class="payout-mobile-count">${items.length} sale${items.length===1?'':'s'}</div>
+ ${isSoon ? '<div class="payout-mobile-badge">● Arriving soon</div>' : ''}
+ </div>
+ <div class="payout-mobile-right">
+ <div class="payout-mobile-amt">${fmtMoney(dayTotal)}</div>
+ </div>
+ </div>`;
+ }).join('') + `</div>`;
+ }
+
+ window._togglePayoutGroup = function(groupId) {
+ const list = document.getElementById(groupId);
+ const btn = document.getElementById('btn-' + groupId);
+ if (!list || !btn) return;
+ list.classList.toggle('collapsed');
+ btn.classList.toggle('open');
+ };
+ // ── End Payout Calendar ───────────────────────────────────────────────────
+
+ function renderAll(){
+ renderMetrics();
+ renderLog();
+ renderCalculator();
+ renderPayoutCalendar();
+ }
+
+ window._depopLoadUserData = function(serverSales, serverGoals){
+   localStorage.setItem(STORAGE_KEY, JSON.stringify(serverSales || []));
+   sales = loadSales();
+   Object.assign(goalState, {
+     profit: num(serverGoals && serverGoals.profit) || 500,
+     sales: num(serverGoals && serverGoals.sales) || 30
+   });
+   if (els.goalProfit) els.goalProfit.value = goalState.profit;
+   if (els.goalSales) els.goalSales.value = goalState.sales;
+   renderAll();
+ };
+
+ renderAll();
+
+ // helpful defaults
+ if (!els.goalProfit.value) els.goalProfit.value = goalState.profit ?? 500;
+ if (!els.goalSales.value) els.goalSales.value = goalState.sales ?? 30;
+ renderGoals({
+ thisMonthProfit: sales.filter(isThisMonth).reduce((a,s)=>a+calcProfit(s),0),
+ thisMonthSales: sales.filter(isThisMonth).length
+ });
+
+ // Keep import modal radio buttons from feeling broken on touch
+ document.querySelectorAll('input[name="import-mode"]').forEach(r => {
+ r.addEventListener('change', () => {
+ const mode = document.querySelector('input[name="import-mode"]:checked').value;
+ els.importHelp.textContent = mode === 'replace'
+ ? 'Replace mode will overwrite your tracker with the CSV rows in the preview.'
+ : 'Merge mode will add only new sales and skip duplicates.';
+ });
+ });
+
+})();
+
+
+// ── Extra Tab: Image uploads + fal.ai key ─────────────────────────────────
+(function(){
+ const FAL_KEY_STORAGE = 'depop-fal-key-v1';
+
+ // ── Image upload helpers ──
+ function setupImageUpload(inputId, previewId, zoneId){
+ const inp = document.getElementById(inputId);
+ const preview = document.getElementById(previewId);
+ const zone = document.getElementById(zoneId);
+ if(!inp || !zone) return;
+ // Click zone → trigger file picker
+ zone.addEventListener('click', function(e){
+ if(e.target === inp) return;
+ inp.click();
+ });
+ inp.addEventListener('change', function(){
+ const file = this.files[0];
+ if(!file) return;
+ const reader = new FileReader();
+ reader.onload = function(e){
+ preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;position:absolute;top:0;left:0">';
+ zone.classList.add('has-image');
+ zone._b64 = e.target.result.split(',')[1];
+ zone._mime = file.type || 'image/jpeg';
+ zone._dataUrl = e.target.result;
+ zone._file = file;
+ };
+ reader.readAsDataURL(file);
+ });
+ }
+ setupImageUpload('inp-clothing','preview-clothing','zone-clothing');
+ setupImageUpload('inp-base','preview-base','zone-base');
+ setupImageUpload('inp-caption','preview-caption','zone-caption');
+
+ // ── fal.ai Key save/load ──
+ const keyInput = document.getElementById('fal-key-input');
+ const keySave = document.getElementById('fal-key-save');
+ const keyStatus = document.getElementById('fal-key-status');
+
+ function loadFalKey(){ return localStorage.getItem(FAL_KEY_STORAGE) || ''; }
+ function saveFalKey(k){ localStorage.setItem(FAL_KEY_STORAGE, k); }
+
+ const existingKey = loadFalKey();
+ if(existingKey){
+ keyInput.value = existingKey;
+ keyStatus.style.display = 'block';
+ keyStatus.style.color = 'var(--green)';
+ keyStatus.textContent = ' Key saved';
+ }
+
+ if(keySave) keySave.addEventListener('click', function(){
+ const k = (keyInput.value || '').trim();
+ if(!k){ keyStatus.style.display='block'; keyStatus.style.color='var(--red)'; keyStatus.textContent='Please paste a fal.ai key'; return; }
+ saveFalKey(k);
+ keyStatus.style.display='block';
+ keyStatus.style.color='var(--green)';
+ keyStatus.textContent=' Key saved';
+ });
+
+ // ── Outfit Generate button ──
+ const genBtn = document.getElementById('gen-outfit-btn');
+ if(genBtn) genBtn.addEventListener('click', generateOutfit);
+
+ // ── Caption Generate button ──
+ const captionBtn = document.getElementById('gen-caption-btn');
+ if(captionBtn) captionBtn.addEventListener('click', generateCaption);
+
+ // ── Copy caption button ──
+ const copyBtn = document.getElementById('copy-caption-btn');
+ if(copyBtn) copyBtn.addEventListener('click', copyCaption);
+
+ // ── Download outfit button ──
+ const dlBtn = document.getElementById('outfit-download-btn');
+ if(dlBtn) dlBtn.addEventListener('click', downloadOutfitImage);
+})();
+
+
+// ── Outfit Generator (fal.ai flux-kontext-pro) ────────────────────────────
+// Sends both images to fal.ai's flux-kontext-pro endpoint for real AI
+// image editing: places the exact clothing item onto the locked base.
+window._outfitImageUrl = null;
+
+// Convert a dataUrl to base64 string (strip prefix)
+function dataUrlToB64(dataUrl){ return dataUrl.split(',')[1]; }
+
+// Build a data URI suitable for fal.ai (they accept data URIs)
+function toFalImageUri(dataUrl, mime){ return dataUrl; }
+
+// Animate the progress bar from 0 → target% over durationMs
+function animateProgress(targetPct, durationMs){
+ var bar = document.getElementById('outfit-progress-bar');
+ if(!bar) return;
+ var start = parseFloat(bar.style.width) || 0;
+ var startTime = null;
+ function step(ts){
+ if(!startTime) startTime = ts;
+ var t = Math.min(1, (ts - startTime) / durationMs);
+ bar.style.width = (start + (targetPct - start) * t) + '%';
+ if(t < 1) requestAnimationFrame(step);
+ }
+ requestAnimationFrame(step);
+}
+
+async function generateOutfit() {
+ var clothingZone = document.getElementById('zone-clothing');
+ var baseZone = document.getElementById('zone-base');
+ var btn = document.getElementById('gen-outfit-btn');
+ var status = document.getElementById('outfit-status');
+ var result = document.getElementById('outfit-result');
+ var loading = document.getElementById('outfit-loading');
+ var loadTxt = document.getElementById('outfit-loading-text');
+ var loadSub = document.getElementById('outfit-loading-sub');
+ var outImg = document.getElementById('outfit-img');
+ var progressBar = document.getElementById('outfit-progress-bar');
+
+ function showStatus(msg, type) {
+ status.style.display = 'block';
+ status.style.background = type === 'error' ? 'rgba(255,95,122,.12)' : 'rgba(62,207,142,.10)';
+ status.style.border = '1px solid ' + (type === 'error' ? 'rgba(255,95,122,.3)' : 'rgba(62,207,142,.3)');
+ status.style.color = type === 'error' ? 'var(--red)' : 'var(--green)';
+ status.textContent = msg;
+ }
+
+ if (!clothingZone._dataUrl || !baseZone._dataUrl) {
+ showStatus('Please upload both a clothing item and a base photo first.', 'error');
+ return;
+ }
+
+ var falKey = (localStorage.getItem('depop-fal-key-v1') || '').trim();
+ if (!falKey) {
+ showStatus(' Please enter and save your fal.ai API key above first.', 'error');
+ document.getElementById('fal-key-input') && document.getElementById('fal-key-input').focus();
+ return;
+ }
+
+ btn.disabled = true;
+ btn.innerHTML = '<span class="extra-spinner"></span>Generating…';
+ status.style.display = 'none';
+ result.style.display = 'none';
+ loading.style.display = 'block';
+ if(progressBar) progressBar.style.width = '0%';
+
+ var loadingMessages = [
+ { txt: 'Sending images to AI…', sub: 'Uploading your clothing + base…', pct: 15 },
+ { txt: 'AI is analysing both images…', sub: 'Understanding your clothing item…', pct: 35 },
+ { txt: 'Placing clothing onto base…', sub: 'Keeping the exact item, locking the rug…', pct: 60 },
+ { txt: 'Blending for realism…', sub: 'Making it look like a real iPhone photo…', pct: 80 },
+ { txt: 'Almost done…', sub: 'Final touches…', pct: 92 }
+ ];
+ var mi = 0;
+ if(loadTxt) loadTxt.textContent = loadingMessages[0].txt;
+ if(loadSub) loadSub.textContent = loadingMessages[0].sub;
+ animateProgress(loadingMessages[0].pct, 600);
+
+ var msgInterval = setInterval(function(){
+ mi = Math.min(mi + 1, loadingMessages.length - 1);
+ if(loadTxt) loadTxt.textContent = loadingMessages[mi].txt;
+ if(loadSub) loadSub.textContent = loadingMessages[mi].sub;
+ animateProgress(loadingMessages[mi].pct, 1800);
+ }, 5000);
+
+ try {
+ // ── Build the instruction prompt ──
+ var prompt = [
+ 'USE CLOTHING ITEM GIVEN + BASE GIVEN TAILORED PROMPT — ANGLE 1',
+ 'First image = CLOTHING ITEM Second image = base',
+ 'Your ONLY task is to place the exact clothing item from Image 1 onto the base as if it was photographed there in real life with an iPhone camera.',
+ 'LOCK THE BASE (DO NOT CHANGE)',
+ 'ONLY USE THE FIRST IMAGE\'S CLOTHING ITEM',
+ 'DO NOT USE A DIFFERENT ONE',
+ '— Keep the clothing item EXACT with no changes.',
+ '— Keep the rug/base EXACT with no lighting or color changes unless explicitly improving realism.',
+ '— Make the clothing blend naturally into the rug like a real iPhone photo, not photoshopped.',
+ '— Flat lay style, shot from directly above, even lighting.',
+ '— The result must look like a genuine Depop product listing photo.'
+ ].join('\n');
+
+ // ── Call fal.ai flux-kontext-pro ──
+ // flux-kontext accepts an array of images as context and edits based on prompt
+ var requestBody = {
+ prompt: prompt,
+ image_url: baseZone._dataUrl, // base = image to edit
+ reference_image_url: clothingZone._dataUrl, // clothing = reference
+ num_inference_steps: 28,
+ guidance_scale: 3.5,
+ num_images: 1,
+ safety_tolerance: '2',
+ output_format: 'jpeg'
+ };
+
+ var resp = await fetch('https://fal.run/fal-ai/flux-pro/kontext', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'Authorization': 'Key ' + falKey
+ },
+ body: JSON.stringify(requestBody)
+ });
+
+ if (!resp.ok) {
+ var errData = {};
+ try { errData = await resp.json(); } catch(_) {}
+ // If kontext-pro failed, fallback to flux-kontext
+ if (resp.status === 404 || resp.status === 422) {
+ throw new Error('__fallback__');
+ }
+ throw new Error('fal.ai error ' + resp.status + ': ' + (errData.detail || errData.message || JSON.stringify(errData)));
+ }
+
+ var data = await resp.json();
+ var imgUrl = (data.images && data.images[0] && data.images[0].url) || data.image && data.image.url || data.url;
+ if (!imgUrl) throw new Error('No image returned from fal.ai. Response: ' + JSON.stringify(data).slice(0,200));
+
+ animateProgress(100, 400);
+ window._outfitImageUrl = imgUrl;
+ outImg.src = imgUrl;
+ outImg.style.display = 'block';
+ result.style.display = 'block';
+ showStatus(' Done! Your flat lay is ready to download.', 'ok');
+
+ } catch(err) {
+ // Try fallback endpoint if primary failed
+ if (err.message === '__fallback__' || err.message.includes('404')) {
+ try {
+ var prompt2 = [
+ 'Place the exact clothing item from the reference image onto this base/rug background, as a realistic flat lay photo shot on an iPhone from directly above.',
+ 'KEEP THE BASE/RUG EXACTLY AS IT IS — do not change its color, texture, or lighting.',
+ 'KEEP THE CLOTHING ITEM EXACTLY AS IT APPEARS — same color, print, and style.',
+ 'Make it look like the clothing was physically placed on the rug and photographed.',
+ 'Flat lay style. No filters. Natural iPhone photo quality.',
+ 'Reference image is the clothing item to place.'
+ ].join(' ');
+
+ var resp2 = await fetch('https://fal.run/fal-ai/flux-kontext/multi-image', {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'Authorization': 'Key ' + (localStorage.getItem('depop-fal-key-v1') || '').trim()
+ },
+ body: JSON.stringify({
+ prompt: prompt2,
+ images: [
+ { url: baseZone._dataUrl, type: 'edit_target' },
+ { url: clothingZone._dataUrl, type: 'reference' }
+ ],
+ num_inference_steps: 28,
+ guidance_scale: 3.5,
+ num_images: 1,
+ output_format: 'jpeg'
+ })
+ });
+
+ if (!resp2.ok) {
+ var e2 = {}; try { e2 = await resp2.json(); } catch(_) {}
+ throw new Error('fal.ai error ' + resp2.status + ': ' + (e2.detail || e2.message || JSON.stringify(e2)));
+ }
+
+ var d2 = await resp2.json();
+ var url2 = (d2.images && d2.images[0] && d2.images[0].url) || d2.url;
+ if(!url2) throw new Error('No image in fallback response: ' + JSON.stringify(d2).slice(0,200));
+
+ animateProgress(100, 400);
+ window._outfitImageUrl = url2;
+ document.getElementById('outfit-img').src = url2;
+ document.getElementById('outfit-img').style.display = 'block';
+ document.getElementById('outfit-result').style.display = 'block';
+ showStatus(' Done! Your flat lay is ready.', 'ok');
+
+ } catch(err2) {
+ showStatus(' ' + (err2.message || 'Generation failed. Check your fal.ai key and try again.'), 'error');
+ }
+ } else {
+ showStatus(' ' + (err.message || 'Generation failed. Check your fal.ai key and try again.'), 'error');
+ }
+ } finally {
+ clearInterval(msgInterval);
+ loading.style.display = 'none';
+ btn.disabled = false;
+ btn.innerHTML = ' Generate flat lay';
+ }
+}
+
+function downloadOutfitImage() {
+ var url = window._outfitImageUrl;
+ var img = document.getElementById('outfit-img');
+ if (!url && img) url = img.src;
+ if (!url || url === window.location.href) { alert('No image to download yet — generate one first!'); return; }
+
+ // If it's a blob or data URL, download directly
+ if (url.startsWith('data:') || url.startsWith('blob:')) {
+ var a = document.createElement('a');
+ a.href = url;
+ a.download = 'flat-lay-' + Date.now() + '.jpg';
+ a.click();
+ return;
+ }
+
+ // External URL — fetch as blob first so the download works across origins
+ fetch(url)
+ .then(function(r){ return r.blob(); })
+ .then(function(blob){
+ var bUrl = URL.createObjectURL(blob);
+ var a = document.createElement('a');
+ a.href = bUrl;
+ a.download = 'flat-lay-' + Date.now() + '.jpg';
+ a.click();
+ setTimeout(function(){ URL.revokeObjectURL(bUrl); }, 10000);
+ })
+ .catch(function(){
+ // Last resort: open in new tab
+ window.open(url, '_blank');
+ });
+}
+
+// ──Caption Generator ─────────────────────────────────────────────────────
+async function generateCaption(){
+ const zone = document.getElementById('zone-caption');
+ const btn = document.getElementById('gen-caption-btn');
+ const status = document.getElementById('caption-status');
+ const result = document.getElementById('caption-result');
+ const captionText = document.getElementById('caption-text');
+
+ if(!zone._b64){
+ status.style.display='block';
+ status.textContent='Please upload a clothing photo first.';
+ return;
+ }
+
+ btn.disabled = true;
+ btn.innerHTML = '<span class="extra-spinner"></span>Generating…';
+ status.style.display = 'block';
+ status.textContent = 'Analysing your item…';
+ result.style.display = 'none';
+
+ const sysPrompt = `You write Depop product captions. Your style is exactly this:
+
+"Black halter top featuring a deep plunge neckline, silver studded buckle detail, and adjustable straps. Super flattering fitted top with an edgy y2k look and soft stretchy material. Perfect for going out, concerts, or pairing with low rise jeans and mini skirts.
+#y2k #grunge #edgy #goingout #cute"
+
+Rules you MUST follow:
+1. First sentence: describe the item objectively — colour, cut, key details, fabric feel if visible.
+2. Second sentence: personality + vibe — use casual, excited language like "super flattering", "so cute", name the aesthetic (y2k, coquette, coastal gran, dark academia, etc).
+3. Third sentence: styling suggestions — "Perfect for..." with 2-3 specific use cases.
+4. Final line: EXACTLY 5 hashtags, all lowercase, no spaces, that are currently trending on Depop for this type of item and aesthetic.
+5. NO quotation marks. NO bullet points. NO markdown. Plain text only.
+6. Keep the energy fun, young, and authentic — like a real Depop seller who loves fashion.`;
+
+ try {
+ const response = await fetch('https://api.anthropic.com/v1/messages', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ model: 'claude-sonnet-4-20250514',
+ max_tokens: 300,
+ system: sysPrompt,
+ messages: [{
+ role: 'user',
+ content: [
+ {
+ type: 'image',
+ source: { type: 'base64', media_type: zone._mime || 'image/jpeg', data: zone._b64 }
+ },
+ { type: 'text', text: 'Write a Depop caption for this clothing item. Follow the style rules exactly.' }
+ ]
+ }]
+ })
+ });
+
+ const data = await response.json();
+ const caption = (data.content || []).map(b => b.text || '').join('').trim();
+ captionText.textContent = caption;
+ result.style.display = 'block';
+ status.textContent = ' Caption ready!';
+ } catch(err){
+ status.textContent = ' Error: ' + (err.message || 'Something went wrong. Try again.');
+ } finally {
+ btn.disabled = false;
+ btn.innerHTML = ' Generate caption';
+ }
+}
+
+function copyCaption(){
+ const text = document.getElementById('caption-text').textContent;
+ navigator.clipboard.writeText(text).then(()=>{ if(window.toast) window.toast('Caption copied!'); });
+}
+
+function escHtml(s){
+ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Account / Auth System ─────────────────────────────────────────────────
+// Server-backed accounts. Passwords are hashed on the server and each user's
+// sales, goals, and fulfillment queue are stored separately.
+(function(){
+ const TOKEN_KEY = 'depop-auth-token-v2';
+ const overlay = document.getElementById('auth-overlay');
+ const tabLogin = document.getElementById('auth-tab-login');
+ const tabSignup = document.getElementById('auth-tab-signup');
+ const uInput = document.getElementById('auth-username');
+ const pInput = document.getElementById('auth-password');
+ const cInput = document.getElementById('auth-confirm');
+ const cWrap = document.getElementById('auth-confirm-wrap');
+ const submitBtn = document.getElementById('auth-submit');
+ const msgEl = document.getElementById('auth-msg');
+ const badge = document.getElementById('account-badge');
+ const badgeName = document.getElementById('account-name');
+ const badgeAvtr = document.getElementById('account-avatar');
+ const logoutBtn = document.getElementById('account-logout');
+ let mode='login';
+ let currentUser=null;
+ let token=localStorage.getItem(TOKEN_KEY)||'';
+
+ function setMsg(txt,type){ msgEl.textContent=txt; msgEl.className='auth-msg'+(type?' '+type:''); }
+ function setMode(m){
+   mode=m;
+   tabLogin.classList.toggle('active',m==='login');
+   tabSignup.classList.toggle('active',m==='signup');
+   cWrap.classList.toggle('hidden',m==='login');
+   submitBtn.textContent=m==='login'?'Log in':'Create account';
+   setMsg('');
+   uInput.focus();
+ }
+ async function api(url, options={}){
+   const headers=Object.assign({'Content-Type':'application/json'},options.headers||{});
+   if(token) headers.Authorization='Bearer '+token;
+   const r=await fetch(url,Object.assign({},options,{headers}));
+   const data=await r.json().catch(()=>({}));
+   if(!r.ok) throw new Error(data.error||'Request failed.');
+   return data;
+ }
+ function showUser(username){
+   currentUser=username;
+   badgeName.textContent=username;
+   badgeAvtr.textContent=username.slice(0,1).toUpperCase();
+   badge.classList.remove('hidden');
+   overlay.classList.add('hidden');
+ }
+
+ window.depopAuth={
+   getToken:()=>token,
+   getUser:()=>currentUser,
+   api,
+   isLoggedIn:()=>!!token
+ };
+
+ // Save the existing tracker data to the logged-in account whenever the app
+ // changes sales or goals. This keeps the data synced across devices.
+ const _origSetItem = localStorage.setItem.bind(localStorage);
+ localStorage.setItem = function(key,value){
+   _origSetItem(key,value);
+   if(!currentUser || !token) return;
+   if(key === 'depop-tracker-v6') {
+     api('/api/data/sales',{method:'PUT',body:JSON.stringify({value:JSON.parse(value)})}).catch(console.warn);
+   } else if(key === 'depop-tracker-goals-v1') {
+     api('/api/data/goals',{method:'PUT',body:JSON.stringify({value:JSON.parse(value)})}).catch(console.warn);
+   }
+ };
+
+ async function loadUserData(){
+   const [salesRes,goalsRes,queueRes]=await Promise.all([
+     api('/api/data/sales'), api('/api/data/goals'), api('/api/data/fulfillment')
+   ]);
+   if(salesRes.value) localStorage.setItem('depop-tracker-v6',JSON.stringify(salesRes.value));
+   else localStorage.removeItem('depop-tracker-v6');
+   if(goalsRes.value) localStorage.setItem('depop-tracker-goals-v1',JSON.stringify(goalsRes.value));
+   else localStorage.removeItem('depop-tracker-goals-v1');
+   if(window._depopLoadUserData) window._depopLoadUserData(salesRes.value||[],goalsRes.value||{});
+   if(window._depopLoadFulfillment) window._depopLoadFulfillment(queueRes.value||[]);
+ }
+
+ async function finishLogin(username,newToken){
+   token=newToken; localStorage.setItem(TOKEN_KEY,token);
+   showUser(username);
+   try{ await loadUserData(); }
+   catch(e){ setMsg('Logged in, but data could not be loaded: '+e.message,'err'); }
+   setMsg(''); pInput.value=''; cInput.value=''; uInput.value='';
+ }
+
+ async function doAuth(){
+   const username=(uInput.value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
+   const password=pInput.value||'';
+   if(!username){setMsg('Please enter a username.','err');return;}
+   if(username.length<2){setMsg('Username must be at least 2 characters.','err');return;}
+   if(password.length<4){setMsg('Password must be at least 4 characters.','err');return;}
+   if(mode==='signup' && password!==cInput.value){setMsg('Passwords do not match.','err');return;}
+   submitBtn.disabled=true;
+   submitBtn.innerHTML='<span class="auth-loading"></span>'+(mode==='login'?'Logging in…':'Creating account…');
+   setMsg('');
+   try{
+     const data=await api('/api/auth/'+(mode==='login'?'login':'signup'),{method:'POST',body:JSON.stringify({username,password})});
+     await finishLogin(data.username,data.token);
+   }catch(e){setMsg(e.message,'err');}
+   finally{submitBtn.disabled=false;submitBtn.textContent=mode==='login'?'Log in':'Create account';}
+ }
+ tabLogin.addEventListener('click',()=>setMode('login'));
+ tabSignup.addEventListener('click',()=>setMode('signup'));
+ [uInput,pInput,cInput].forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter')doAuth();}));
+ submitBtn.addEventListener('click',doAuth);
+
+ logoutBtn.addEventListener('click',async()=>{
+   if(!currentUser)return;
+   if(!confirm('Log out of '+currentUser+'?'))return;
+   try{await api('/api/auth/logout',{method:'POST'});}catch(e){}
+   token=''; currentUser=null; localStorage.removeItem(TOKEN_KEY);
+   badge.classList.add('hidden'); overlay.classList.remove('hidden'); setMode('login');
+ });
+
+ async function tryAutoLogin(){
+   if(!token){overlay.classList.remove('hidden');return;}
+   try{
+     const me=await api('/api/auth/me');
+     showUser(me.username);
+     await loadUserData();
+   }catch(e){
+     token=''; localStorage.removeItem(TOKEN_KEY); overlay.classList.remove('hidden');
+   }
+ }
+ tryAutoLogin();
+})();
+</script>
+
+<!-- ── Fulfillment tab: Gmail scan + local order queue ─────────────────── -->
+<script>
+(function(){
+ const QUEUE_KEY = 'depop-fulfillment-v1';
+ const LOCAL_QUEUE_KEY = QUEUE_KEY;
+ const STATUS_LABEL = { new:'New', ready:'Ready to order', ordered:'Ordered', shipped:'Shipped', done:'Done' };
+ const STATUS_BADGE = { new:'badge-unpaid', ready:'badge-warning', ordered:'badge-info', shipped:'badge-paid', done:'badge-paid' };
+
+ const els2 = {
+ statusBadge: document.getElementById('gmail-status-badge'),
+ connectBtn: document.getElementById('gmail-connect-btn'),
+ scanBtn: document.getElementById('gmail-scan-btn'),
+ scanStatus: document.getElementById('gmail-scan-status'),
+ addBtn: document.getElementById('fulfillment-add-btn'),
+ countBadge: document.getElementById('fulfillment-count-badge'),
+ body: document.getElementById('fulfillment-body'),
+ empty: document.getElementById('fulfillment-empty'),
+ mobileList: document.getElementById('fulfillment-mobile-list'),
+ tabBtn: document.getElementById('tab-fulfillment')
+ };
+
+ function loadQueue(){
+ try{
+ const arr = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+ return Array.isArray(arr) ? arr : [];
+ }catch(e){ return []; }
+ }
+ async function saveQueue(q){
+   localStorage.setItem(LOCAL_QUEUE_KEY, JSON.stringify(q));
+   try {
+     if(window.depopAuth && window.depopAuth.isLoggedIn()) {
+       await window.depopAuth.api('/api/data/fulfillment',{method:'PUT',body:JSON.stringify({value:q})});
+     }
+   } catch(e) { console.warn('Could not save fulfillment queue:',e); }
+ }
+ function setQueueFromServer(q){ queue=Array.isArray(q)?q:[]; localStorage.setItem(LOCAL_QUEUE_KEY,JSON.stringify(queue)); render(); }
+ window._depopLoadFulfillment=setQueueFromServer;
+ let queue = loadQueue();
+
+ function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+ function money(v){ return '$' + (Number(v)||0).toFixed(2); }
+
+ function render(){
+ els2.countBadge.textContent = queue.length + (queue.length === 1 ? ' in queue' : ' in queue');
+ els2.empty.style.display = queue.length ? 'none' : 'block';
+
+ els2.body.innerHTML = queue.map(function(o){
+ return '<tr data-id="' + esc(o.id) + '">' +
+ '<td><div class="item-name" title="' + esc(o.itemName) + '">' + esc(o.itemName) + '</div></td>' +
+ '<td>' + money(o.sold) + '</td>' +
+ '<td>' + esc(o.buyer || '—') + '</td>' +
+ '<td>' + esc(o.date || '—') + '</td>' +
+ '<td><input type="text" class="ff-supplier" data-id="' + esc(o.id) + '" placeholder="Paste AliExpress link or SKU" value="' + esc(o.supplierRef || '') + '" style="width:100%;padding:7px 9px;font-size:12px" /></td>' +
+ '<td><select class="ff-status" data-id="' + esc(o.id) + '" style="width:100%;padding:7px 9px;font-size:12px">' +
+ Object.keys(STATUS_LABEL).map(function(k){ return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>'; }).join('') +
+ '</select></td>' +
+ '<td><button class="inline-btn del-btn ff-delete" data-id="' + esc(o.id) + '">Remove</button></td>' +
+ '</tr>';
+ }).join('');
+
+ els2.mobileList.innerHTML = queue.map(function(o){
+ return '<div class="sale-card">' +
+ '<div class="sale-head"><div class="item-name">' + esc(o.itemName) + '</div><span class="badge ' + (STATUS_BADGE[o.status]||'badge-info') + '">' + (STATUS_LABEL[o.status]||o.status) + '</span></div>' +
+ '<div class="sale-row"><span class="chip">Sold <strong>' + money(o.sold) + '</strong></span><span class="chip">Buyer <strong>' + esc(o.buyer || '—') + '</strong></span><span class="chip">' + esc(o.date || '—') + '</span></div>' +
+ '<input type="text" class="ff-supplier" data-id="' + esc(o.id) + '" placeholder="Paste AliExpress link or SKU" value="' + esc(o.supplierRef || '') + '" style="width:100%" />' +
+ '<div class="sale-footer">' +
+ '<select class="ff-status" data-id="' + esc(o.id) + '">' +
+ Object.keys(STATUS_LABEL).map(function(k){ return '<option value="' + k + '"' + (o.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>'; }).join('') +
+ '</select>' +
+ '<button class="inline-btn del-btn ff-delete" data-id="' + esc(o.id) + '">Remove</button>' +
+ '</div></div>';
+ }).join('');
+ }
+
+ function findRow(id){ return queue.find(function(o){ return o.id === id; }); }
+
+ document.addEventListener('change', function(e){
+ if(e.target.classList.contains('ff-status')){
+ const row = findRow(e.target.dataset.id);
+ if(row){ row.status = e.target.value; saveQueue(queue); render(); }
+ }
+ });
+ document.addEventListener('input', function(e){
+ if(e.target.classList.contains('ff-supplier')){
+ const row = findRow(e.target.dataset.id);
+ if(row){
+ row.supplierRef = e.target.value;
+ if(row.status === 'new' && row.supplierRef.trim()) row.status = 'ready';
+ saveQueue(queue);
+ }
+ }
+ });
+ document.addEventListener('click', function(e){
+ if(e.target.classList.contains('ff-delete')){
+ const id = e.target.dataset.id;
+ if(!confirm('Remove this order from the fulfillment queue?')) return;
+ queue = queue.filter(function(o){ return o.id !== id; });
+ saveQueue(queue);
+ render();
+ }
+ });
+
+ els2.addBtn.addEventListener('click', function(){
+ const itemName = prompt('Item name?');
+ if(!itemName) return;
+ const soldRaw = prompt('Sale price?', '0');
+ const buyer = prompt('Buyer username (optional)?') || '';
+ queue.unshift({
+ id: 'manual-' + Date.now() + '-' + Math.random().toString(36).slice(2,8),
+ itemName: itemName.trim(),
+ sold: Number(soldRaw) || 0,
+ buyer: buyer.trim(),
+ date: new Date().toISOString().slice(0,10),
+ emailId: null,
+ supplierRef: '',
+ status: 'new'
+ });
+ saveQueue(queue);
+ render();
+ });
+
+ // ── Gmail connection ──
+ async function refreshGmailStatus(){
+ try{
+ const r = await fetch('/api/gmail/status');
+ const data = await r.json();
+ if(data.connected){
+ els2.statusBadge.textContent = 'Connected' + (data.email ? ' · ' + data.email : '');
+ els2.statusBadge.className = 'badge badge-paid';
+ els2.connectBtn.textContent = 'Reconnect Gmail';
+ els2.scanBtn.disabled = false;
+ } else {
+ els2.statusBadge.textContent = 'Not connected';
+ els2.statusBadge.className = 'badge badge-unpaid';
+ els2.connectBtn.textContent = 'Connect Gmail';
+ els2.scanBtn.disabled = true;
+ }
+ }catch(e){
+ els2.statusBadge.textContent = 'Backend unreachable';
+ els2.statusBadge.className = 'badge badge-unpaid';
+ els2.scanBtn.disabled = true;
+ }
+ }
+
+ els2.connectBtn.addEventListener('click', async function(){
+ try{
+ els2.connectBtn.disabled = true;
+ const r = await fetch('/api/gmail/auth');
+ const data = await r.json();
+ if(data.url){ window.location.href = data.url; return; }
+ if(data.error){ els2.scanStatus.textContent = 'Error: ' + data.error; }
+ }catch(e){
+ els2.scanStatus.textContent = 'Could not start Gmail connection: ' + e.message;
+ }finally{
+ els2.connectBtn.disabled = false;
+ }
+ });
+
+ els2.scanBtn.addEventListener('click', async function(){
+ els2.scanBtn.disabled = true;
+ els2.scanStatus.textContent = 'Scanning Gmail…';
+ try{
+ const r = await fetch('/api/gmail/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({}) });
+ const data = await r.json();
+ if(data.error){ els2.scanStatus.textContent = 'Error: ' + data.error; return; }
+ const existingIds = new Set(queue.map(function(o){ return o.emailId; }).filter(Boolean));
+ let added = 0;
+ (data.orders || []).forEach(function(o){
+ if(o.emailId && existingIds.has(o.emailId)) return;
+ queue.unshift({ id: o.id, itemName: o.itemName, sold: o.sold, buyer: o.buyer, date: o.date, emailId: o.emailId, supplierRef: '', status: 'new' });
+ added++;
+ });
+ saveQueue(queue);
+ render();
+ els2.scanStatus.textContent = 'Checked ' + (data.checked || 0) + ' emails — added ' + added + ' new order' + (added === 1 ? '' : 's') + '.';
+ }catch(e){
+ els2.scanStatus.textContent = 'Scan failed: ' + e.message;
+ }finally{
+ els2.scanBtn.disabled = false;
+ }
+ });
+
+ if(els2.tabBtn){
+ els2.tabBtn.addEventListener('click', function(){ refreshGmailStatus(); });
+ }
+
+ render();
+ refreshGmailStatus();
+})();
+</script>
+</body>
+</html>
